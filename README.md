@@ -23,6 +23,12 @@ Create the WebView and setup the url:
   }
  ```
 
+Add the Android permission to access the Internet on `AndroidManifest.xml`
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
 When the sample is available call the magical js function
 
 ```java
