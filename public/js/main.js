@@ -1,3 +1,10 @@
+// let csvToJson = require('convert-csv-to-json');
+ 
+// let fileInputName = 'data.csv'; 
+// let fileOutputName = 'output-data.json';
+ 
+// csvToJson.generateJsonFileFromCsv(fileInputName,fileOutputName);
+
 var camera, scene, renderer;
 var geometry, material, mesh;
 var rendererHeight,
@@ -15,7 +22,7 @@ var mousePos = {
         y: 0
     },
     cameraPos = {
-        x: 0.425,
+        x: 0.25,
         y: 0.595
     };
 
@@ -24,7 +31,12 @@ var lastIndex = arrayData.length;
 
 var vectorObject = new THREE.Line();
 var vectorQuaternion = new THREE.Quaternion();
-vectorQuaternion.set(arrayData[0].x, arrayData[0].y, arrayData[0].z, arrayData[0].w);
+vectorQuaternion.set(
+  arrayData[0].y, 
+  arrayData[0].z, 
+  arrayData[0].x, 
+  arrayData[0].w
+);
 var rotationAxis = new THREE.Vector3(0, 1, 0);
 var axisXName, axisYName, axisZName;
 var eulerOrder = "XYZ";
@@ -39,7 +51,25 @@ var rotationAxisObject = new THREE.Line();
 
 
 init();
-animate();
+// animate();
+
+function updateQuaternion(x, y, z, w) {
+  
+  document.getElementById("value").innerHTML = "<b>x:</b> " + x + "<br/><b>y</b>: " + y + "<br/><b>z</b>: " + z + "<br/><b>w</b>:" + w;
+  
+  vectorQuaternion.set(
+    parseFloat(y), 
+    parseFloat(z), 
+    parseFloat(x), 
+    parseFloat(w)
+  );
+  updateRotationAxis();
+  updateVectorVisuals();
+  updateRotationInfo();
+
+  renderer.render(scene, camera);
+  updateAxesNames();
+}
 
 function init() {
     setAnimation(true);
@@ -306,10 +336,10 @@ function animate() {
         // var a = new THREE.Euler(0, -0.018, 0.006, 'XYZ');
         var additionalQuat = new THREE.Quaternion();
         vectorQuaternion.set(
-            parseFloat(arrayData[index].x), 
-            parseFloat(arrayData[index].y), 
-            parseFloat(arrayData[index].z), 
-            parseFloat(arrayData[index].w)
+          parseFloat(arrayData[index].y), 
+          parseFloat(arrayData[index].z), 
+          parseFloat(arrayData[index].x), 
+          parseFloat(arrayData[index].w)
         );
         // additionalQuat.normalize();
         // vectorQuaternion.multiply(additionalQuat);
@@ -321,15 +351,18 @@ function animate() {
 
     renderer.render(scene, camera);
     updateAxesNames();
+    // return
 
-    console.log(index)
+    // console.log(index)
 
     index++;
     if (index >= lastIndex) {
         setAnimation(false);
+
+        // TODO: restart promt
     }
     else {
-        setTimeout(animate, 20);
+        setTimeout(animate, 10);
     };
 }
 
@@ -361,18 +394,18 @@ function updateRotationAxis() {
     var sin = Math.sin(theta / 2);
     if (sin >= 0.01 || sin <= -0.01) {
         //console.log(quatY + "  "+ quatZ + "  "+ sin)
-        rotationAxis.x = vectorQuaternion.x / sin;
-        rotationAxis.y = vectorQuaternion.y / sin;
-        rotationAxis.z = vectorQuaternion.z / sin;
+        rotationAxis.x = vectorQuaternion.z / sin;
+        rotationAxis.y = vectorQuaternion.x / sin;
+        rotationAxis.z = vectorQuaternion.y / sin;
         rotationAxis.normalize();
     }
 }
 
 function updateVectorVisuals() {
     vectorObject.quaternion.w = vectorQuaternion.w;
-    vectorObject.quaternion.x = vectorQuaternion.x;
-    vectorObject.quaternion.y = vectorQuaternion.y;
-    vectorObject.quaternion.z = vectorQuaternion.z;
+    vectorObject.quaternion.x = vectorQuaternion.y;
+    vectorObject.quaternion.y = vectorQuaternion.z;
+    vectorObject.quaternion.z = vectorQuaternion.x;
 
     for (var i = 1; i <= TRACE_SEGMENTS + 1; i++) {
         var currentQuat = new THREE.Quaternion().slerp(vectorQuaternion, (i - 1) / TRACE_SEGMENTS);
@@ -399,35 +432,11 @@ function updateVectorVisuals() {
 }
 
 function updateRotationInfo() {
-    updateRotationInfoQuaternion();
+    // updateRotationInfoQuaternion();
 
     var vectorEuler = new THREE.Euler(0, 0, 0, eulerOrder);
     vectorEuler.setFromQuaternion(vectorQuaternion, eulerOrder);
-    updateRotationInfoEuler(vectorEuler);
-}
-
-function updateRotationInfoQuaternion()  {
-    document.getElementById("inputQW").value = formatNumberValue(vectorQuaternion.w);
-    document.getElementById("inputQX").value = formatNumberValue(vectorQuaternion.x);
-    document.getElementById("inputQY").value = formatNumberValue(vectorQuaternion.y);
-    document.getElementById("inputQZ").value = formatNumberValue(vectorQuaternion.z);
-}
-
-function updateRotationInfoEuler(vectorEuler) {
-    document.getElementById("inputEX").value = formatNumberValue(radToSpecific(vectorEuler.x));
-    document.getElementById("inputEY").value = formatNumberValue(radToSpecific(vectorEuler.y));
-    document.getElementById("inputEZ").value = formatNumberValue(radToSpecific(vectorEuler.z));
-
-
-    document.getElementById("sliderQW").setAttribute("style", quatSliderStyle(vectorQuaternion.w));
-    document.getElementById("sliderQX").setAttribute("style", quatSliderStyle(vectorQuaternion.x));
-    document.getElementById("sliderQY").setAttribute("style", quatSliderStyle(vectorQuaternion.y));
-    document.getElementById("sliderQZ").setAttribute("style", quatSliderStyle(vectorQuaternion.z));
-
-    document.getElementById("sliderEX").setAttribute("style", eulerSliderStyle(vectorEuler.x));
-    document.getElementById("sliderEY").setAttribute("style", eulerSliderStyle(vectorEuler.y));
-    document.getElementById("sliderEZ").setAttribute("style", eulerSliderStyle(vectorEuler.z));
-
+    // updateRotationInfoEuler(vectorEuler);
 }
 
 function quatSliderStyle(quatValue) {
@@ -464,217 +473,6 @@ function inputSelected() {
     setAnimation(false);
 }
 
-function checkEnter(event, category) {
-    if (event.keyCode == 13) {
-        if (category == "quaternion") {
-            applyQuaternionRotation();
-        } else if (category == "euler") {
-            applyEulerRotation();
-        }
-        return false;
-    }
-}
-
-function applyQuaternionRotation() {
-    setAnimation(false);
-
-    vectorQuaternion.w = formatStringValue(document.getElementById("inputQW").value);
-    vectorQuaternion.x = formatStringValue(document.getElementById("inputQX").value);
-    vectorQuaternion.y = formatStringValue(document.getElementById("inputQY").value);
-    vectorQuaternion.z = formatStringValue(document.getElementById("inputQZ").value);
-    vectorQuaternion.normalize();
-    updateRotationAxis();
-    updateVectorVisuals();
-    updateRotationInfo();
-    renderer.render(scene, camera);
-}
-
-function applyEulerRotation() {
-    setAnimation(false);
-
-    var eulerX = specificToRad(formatStringValue(document.getElementById("inputEX").value));
-    var eulerY = specificToRad(formatStringValue(document.getElementById("inputEY").value));
-    var eulerZ = specificToRad(formatStringValue(document.getElementById("inputEZ").value));
-    var vectorEuler = new THREE.Euler(eulerX, eulerY, eulerZ, eulerOrder);
-    vectorQuaternion.setFromEuler(vectorEuler);
-    updateRotationAxis();
-    updateVectorVisuals();
-    updateRotationInfo();
-    renderer.render(scene, camera);
-}
-
-function formatStringValue(stringValue) {
-    var value = parseFloat(stringValue.trim());
-    if (isNaN(value)) {
-        return 0;
-    } else {
-        return value;
-    }
-}
-
-
-
-function orderDropdownClicked() {
-    closeDropdowns();
-    document.getElementById("orderDropdownMenu").classList.toggle("show");
-}
-
-function angleDropdownClicked() {
-    closeDropdowns();
-    document.getElementById("angleDropdownMenu").classList.toggle("show");
-}
-
-// Close the dropdown menu if the user clicks outside of it
-window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
-        closeDropdowns();
-    }
-}
-
-function closeDropdowns() {
-    var dropdowns = document.getElementsByClassName("dropdown-content");
-    var i;
-    for (i = 0; i < dropdowns.length; i++) {
-        var openDropdown = dropdowns[i];
-        if (openDropdown.classList.contains('show')) {
-            openDropdown.classList.remove('show');
-        }
-    }
-}
-
-function eulerOrderChanged(newOrder) {
-    eulerOrder = newOrder;
-    document.getElementById("eulerOrderButton").innerHTML = eulerOrder + " - Order &#x25BE";
-    updateRotationInfo();
-}
-
-function eulerAngleFormatChanged(newAngleFormat) {
-    eulerAngleFormat = newAngleFormat;
-    document.getElementById("eulerAngleFormatButton").innerHTML = eulerAngleFormat + " &#x25BE";
-    updateRotationInfo();
-}
-
-function applyManualSliderChange() {
-    var slider = document.getElementById("whole" + objectDragged);
-    var rect = slider.getBoundingClientRect();
-    var percentage = Math.min(1, Math.max(0, (mousePos.x - rect.left) / (rect.right - rect.left))) * 2 - 1;
-    if (objectDragged.startsWith("sliderE")) {
-        var eulerX = specificToRad(formatStringValue(document.getElementById("inputEX").value));
-        var eulerY = specificToRad(formatStringValue(document.getElementById("inputEY").value));
-        var eulerZ = specificToRad(formatStringValue(document.getElementById("inputEZ").value));
-        if (objectDragged == "sliderEX") {
-            eulerX = percentage * 3.1415;
-        } else if (objectDragged == "sliderEY") {
-            eulerY = percentage * 3.1415;
-        } else if (objectDragged == "sliderEZ") {
-            eulerZ = percentage * 3.1415;
-        }
-        var vectorEuler = new THREE.Euler(eulerX, eulerY, eulerZ, eulerOrder);
-        vectorQuaternion.setFromEuler(vectorEuler);
-
-        updateRotationAxis();
-        updateVectorVisuals();
-        updateRotationInfoQuaternion();
-        updateRotationInfoEuler(vectorEuler)
-        renderer.render(scene, camera);
-    } else if (objectDragged.startsWith("sliderQ")) {
-        var quatW = formatStringValue(document.getElementById("inputQW").value);
-        var quatX = formatStringValue(document.getElementById("inputQX").value);
-        var quatY = formatStringValue(document.getElementById("inputQY").value);
-        var quatZ = formatStringValue(document.getElementById("inputQZ").value);
-        var theta = Math.acos(quatW) * 2;
-        var sin = Math.sin(theta / 2);
-        if (objectDragged == "sliderQW") {
-            theta = Math.acos(percentage) * 2;
-            vectorQuaternion.w = percentage;
-            sin = Math.sin(theta / 2);
-        } else if (sin >= 0.01 || sin <= -0.01) {
-            var axisX = rotationAxis.x;
-            var axisY = rotationAxis.y;
-            var axisZ = rotationAxis.z;
-            if (objectDragged == "sliderQX") {
-                var axisX = Math.max(-1, Math.min(1, percentage / sin));
-                var rest = 1 - axisX * axisX;
-                if (axisZ + axisY == 0) {
-                    axisY = Math.sqrt(rest / 2);
-                    axisZ = axisY;
-                } else {
-                    var ratio = (axisY * axisY) / (axisZ * axisZ + axisY * axisY);
-                    axisY = Math.sign(axisY) * Math.sqrt(rest * ratio);
-                    axisZ = Math.sign(axisZ) * Math.sqrt((1 - ratio) * rest);
-                }
-            } else if (objectDragged == "sliderQY") {
-                var axisY = Math.max(-1, Math.min(1, percentage / sin));
-                var rest = 1 - axisY * axisY;
-                if (axisX + axisZ == 0) {
-                    axisX = Math.sqrt(rest / 2);
-                    axisZ = axisX;
-                } else {
-                    var ratio = (axisX * axisX) / (axisZ * axisZ + axisX * axisX);
-                    axisX = Math.sign(axisX) * Math.sqrt(rest * ratio);
-                    axisZ = Math.sign(axisZ) * Math.sqrt((1 - ratio) * rest);
-                }
-            } else if (objectDragged == "sliderQZ") {
-                var axisZ = Math.max(-1, Math.min(1, percentage / sin));
-                var rest = 1 - axisZ * axisZ;
-                if (axisX + axisY == 0) {
-                    axisX = Math.sqrt(rest / 2);
-                    axisY = axisX;
-                } else {
-                    var ratio = (axisX * axisX) / (axisY * axisY + axisX * axisX);
-                    axisX = Math.sign(axisX) * Math.sqrt(rest * ratio);
-                    axisY = Math.sign(axisY) * Math.sqrt((1 - ratio) * rest);
-                }
-            }
-            rotationAxis.x = axisX;
-            rotationAxis.y = axisY;
-            rotationAxis.z = axisZ;
-        }
-        vectorQuaternion.x = rotationAxis.x * sin;
-        vectorQuaternion.y = rotationAxis.y * sin;
-        vectorQuaternion.z = rotationAxis.z * sin;
-        updateRotationAxis();
-        updateVectorVisuals();
-        updateRotationInfo();
-        renderer.render(scene, camera);
-    }
-}
-
-function sliderClick(id) {
-    inputSelected();
-    if (objectDragged == "none") {
-        objectDragged = id;
-    }
-    applyManualSliderChange();
-}
-
 function setAnimation(on) {
     animation = on;
-    document.getElementById("animationCheckbox").checked = animation;
-}
-
-function animationCheckboxChanged() {
-    animation = document.getElementById("animationCheckbox").checked;
-}
-
-function switchAnimation() {
-    setAnimation(!animation);
-}
-
-function showAxisCheckboxChanged() {
-    setShowAxis(document.getElementById("showAxisCheckbox").checked);
-}
-
-function switchShowAxis() {
-    setShowAxis(!showAxis);
-    document.getElementById("showAxisCheckbox").checked = showAxis;
-}
-
-function setShowAxis(on) {
-    showAxis = on;
-    if (showAxis) {
-        scene.add(rotationAxisObject);
-    } else {
-        scene.remove(rotationAxisObject);
-    }
 }
