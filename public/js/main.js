@@ -202,12 +202,12 @@ function initVector() {
     var vectorGeom = new THREE.Geometry();
     vectorGeom.vertices.push(new THREE.Vector3(0, 0, 0));
     var vectorStandard = new THREE.Vector3(AXIS_LENGTH, 0, 0);
-    var vectorStandardBack = new THREE.Vector3(-AXIS_LENGTH / 5, AXIS_LENGTH / 5, 0);
-    vectorStandardBack.add(vectorStandard);
+    //var vectorStandardBack = new THREE.Vector3(-AXIS_LENGTH / 5, AXIS_LENGTH / 5, 0);
+    //vectorStandardBack.add(vectorStandard);
     vectorStandard.applyQuaternion(vectorQuaternion);
-    vectorStandardBack.applyQuaternion(vectorQuaternion);
+    //vectorStandardBack.applyQuaternion(vectorQuaternion);
     vectorGeom.vertices.push(vectorStandard);
-    vectorGeom.vertices.push(vectorStandardBack);
+    //vectorGeom.vertices.push(vectorStandardBack);
     vectorObject = new THREE.Line(vectorGeom, vectorMat);
     scene.add(vectorObject);
 }
@@ -238,8 +238,8 @@ function initLineTrace() {
 
     meshTraceObject = new THREE.Mesh(meshTraceGeom, meshTraceMat);
     lineTraceObject = new THREE.Line(lineTraceGeom, lineTraceMat);
-    scene.add(meshTraceObject);
-    scene.add(lineTraceObject);
+    //scene.add(meshTraceObject);
+    //scene.add(lineTraceObject);
 }
 
 function initRotationAxis() {
