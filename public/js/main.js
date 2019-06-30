@@ -55,7 +55,7 @@ init();
 
 function updateQuaternion(x, y, z, w) {
   
-  document.getElementById("value").innerHTML = "<b>x:</b> " + x + "<br/><b>y</b>: " + y + "<br/><b>z</b>: " + z + "<br/><b>w</b>:" + w;
+  //document.getElementById("value").innerHTML = "<b>x:</b> " + x + "<br/><b>y</b>: " + y + "<br/><b>z</b>: " + z + "<br/><b>w</b>:" + w;
   
   vectorQuaternion.set(
     parseFloat(y), 
