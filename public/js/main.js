@@ -341,9 +341,9 @@ function animate() {
           parseFloat(arrayData[index].x), 
           parseFloat(arrayData[index].w)
         );
-         additionalQuat.normalize();
-         vectorQuaternion.multiply(additionalQuat);
-         vectorQuaternion.normalize();
+         //additionalQuat.normalize();
+         //vectorQuaternion.multiply(additionalQuat);
+        // vectorQuaternion.normalize();
         updateRotationAxis();
         updateVectorVisuals();
         updateRotationInfo();
