@@ -32,9 +32,9 @@ var lastIndex = arrayData.length;
 var vectorObject = new THREE.Line();
 var vectorQuaternion = new THREE.Quaternion();
 vectorQuaternion.set(
-  arrayData[0].x, 
   arrayData[0].y, 
   arrayData[0].z, 
+  arrayData[0].x, 
   arrayData[0].w
 );
 var rotationAxis = new THREE.Vector3(0, 1, 0);
@@ -58,9 +58,9 @@ function updateQuaternion(x, y, z, w) {
   //document.getElementById("value").innerHTML = "<b>x:</b> " + x + "<br/><b>y</b>: " + y + "<br/><b>z</b>: " + z + "<br/><b>w</b>:" + w;
   
   vectorQuaternion.set(
-    parseFloat(x), 
     parseFloat(y), 
     parseFloat(z), 
+    parseFloat(x), 
     parseFloat(w)
   );
   updateRotationAxis();
