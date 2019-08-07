@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "yarn nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -11,5 +12,8 @@
   "dependencies": {
     "convert-csv-to-json": "^0.0.14",
     "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1"
   }
 }
