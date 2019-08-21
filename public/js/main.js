@@ -11,11 +11,11 @@ const AXIS_LENGTH = 430,
 var objectDragged = "none";
 var mousePos = {
     x: 0,
-    y: 0,
+    y: 0
   },
   cameraPos = {
-    x: 0.25,
-    y: 0.595,
+    x: 0.425,
+    y: 1.595
   };
 
 var index = 1;
@@ -23,12 +23,12 @@ var lastIndex = dataArray.length;
 
 var vectorObject = new THREE.Line();
 var vectorQuaternion = new THREE.Quaternion();
-vectorQuaternion.set(
-  dataArray[0].x,
-  dataArray[0].y,
-  dataArray[0].z,
-  dataArray[0].w
-);
+// vectorQuaternion.set(
+//   dataArray[0].x,
+//   dataArray[0].y,
+//   dataArray[0].z,
+//   dataArray[0].w
+// );
 var rotationAxis = new THREE.Vector3(0, 1, 0);
 var axisXName, axisYName, axisZName;
 var eulerOrder = "XYZ";
@@ -54,10 +54,19 @@ function clearData() {
 }
 
 function saveData() {
+  var fd = new FormData();
+  fd.append("d", JSON.stringify({ data: dataArray }));
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "/save", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+
+  xhr.send(fd);
+
   // TODO: Save data to the DB
-  console.log(
-    JSON.stringify(dataArray.slice(Math.max(dataArray.length - 10, 1)))
-  );
+  // console.log(
+  //   JSON.stringify(dataArray.slice(Math.max(dataArray.length - 10, 1)))
+  // );
 }
 
 function updateQuaternion(x, y, z, w) {
@@ -71,10 +80,15 @@ function updateQuaternion(x, y, z, w) {
   );
   updateRotationAxis();
   updateVectorVisuals();
-  updateRotationInfo();
+  // updateRotationInfo();
   updateAxesNames();
 
   renderer.render(scene, camera);
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "/save", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.send(JSON.stringify({ x, y, z, w, timestamp: Date.now() }));
 }
 
 function init() {
@@ -99,7 +113,7 @@ function init() {
 
   renderer = new THREE.WebGLRenderer({
     alpha: true,
-    antialias: true,
+    antialias: true
   });
   renderer.setSize(rendererWidth, rendererHeight);
   renderer.setClearColor(0xffffff, 1);
@@ -118,11 +132,11 @@ function init() {
 function initGrid() {
   var GRID_SEGMENT_COUNT = 5;
   var gridLineMat = new THREE.LineBasicMaterial({
-    color: 0xdddddd,
+    color: 0xdddddd
   });
   var gridLineMatThick = new THREE.LineBasicMaterial({
     color: 0xaaaaaa,
-    linewidth: 2,
+    linewidth: 2
   });
 
   for (var i = -GRID_SEGMENT_COUNT; i <= GRID_SEGMENT_COUNT; i++) {
@@ -140,11 +154,11 @@ function initGrid() {
       scene.add(new THREE.Line(gridLineGeomX, gridLineMatThick));
       scene.add(new THREE.Line(gridLineGeomY, gridLineMatThick));
     } else {
-      gridLineGeomX.vertices.push(new THREE.Vector3(dist, 0, -AXIS_LENGTH));
-      gridLineGeomX.vertices.push(new THREE.Vector3(dist, 0, AXIS_LENGTH));
+      gridLineGeomX.vertices.push(new THREE.Vector3(dist, -AXIS_LENGTH, 0));
+      gridLineGeomX.vertices.push(new THREE.Vector3(dist, AXIS_LENGTH, 0));
 
-      gridLineGeomY.vertices.push(new THREE.Vector3(-AXIS_LENGTH, 0, dist));
-      gridLineGeomY.vertices.push(new THREE.Vector3(AXIS_LENGTH, 0, dist));
+      gridLineGeomY.vertices.push(new THREE.Vector3(-AXIS_LENGTH, dist, 0));
+      gridLineGeomY.vertices.push(new THREE.Vector3(AXIS_LENGTH, dist, 0));
 
       scene.add(new THREE.Line(gridLineGeomX, gridLineMat));
       scene.add(new THREE.Line(gridLineGeomY, gridLineMat));
@@ -155,7 +169,7 @@ function initGrid() {
 function initAxes() {
   var xAxisMat = new THREE.LineBasicMaterial({
     color: 0xff0000,
-    linewidth: 2,
+    linewidth: 1
   });
   var xAxisGeom = new THREE.Geometry();
   xAxisGeom.vertices.push(new THREE.Vector3(0, 0, 0));
@@ -165,7 +179,7 @@ function initAxes() {
 
   var yAxisMat = new THREE.LineBasicMaterial({
     color: 0x00cc00,
-    linewidth: 2,
+    linewidth: 1
   });
   var yAxisGeom = new THREE.Geometry();
   yAxisGeom.vertices.push(new THREE.Vector3(0, 0, 0));
@@ -175,7 +189,7 @@ function initAxes() {
 
   var zAxisMat = new THREE.LineBasicMaterial({
     color: 0x0000ff,
-    linewidth: 4,
+    linewidth: 1
   });
   var zAxisGeom = new THREE.Geometry();
   zAxisGeom.vertices.push(new THREE.Vector3(0, 0, 0));
@@ -204,17 +218,21 @@ function initAxesNames() {
 function initVector() {
   var vectorMat = new THREE.LineBasicMaterial({
     color: 0x000000,
-    linewidth: 3,
+    linewidth: 3
   });
   var vectorGeom = new THREE.Geometry();
   vectorGeom.vertices.push(new THREE.Vector3(0, 0, 0));
   var vectorStandard = new THREE.Vector3(AXIS_LENGTH, 0, 0);
-  //var vectorStandardBack = new THREE.Vector3(-AXIS_LENGTH / 5, AXIS_LENGTH / 5, 0);
-  //vectorStandardBack.add(vectorStandard);
+  var vectorStandardBack = new THREE.Vector3(
+    -AXIS_LENGTH / 5,
+    AXIS_LENGTH / 5,
+    0
+  );
+  vectorStandardBack.add(vectorStandard);
   vectorStandard.applyQuaternion(vectorQuaternion);
-  //vectorStandardBack.applyQuaternion(vectorQuaternion);
+  vectorStandardBack.applyQuaternion(vectorQuaternion);
   vectorGeom.vertices.push(vectorStandard);
-  //vectorGeom.vertices.push(vectorStandardBack);
+  vectorGeom.vertices.push(vectorStandardBack);
   vectorObject = new THREE.Line(vectorGeom, vectorMat);
   scene.add(vectorObject);
 }
@@ -224,10 +242,10 @@ function initLineTrace() {
     color: 0x0066cc,
     side: THREE.DoubleSide,
     transparent: true,
-    opacity: 0.05,
+    opacity: 0.05
   });
   var lineTraceMat = new THREE.LineBasicMaterial({
-    color: 0x0066cc,
+    color: 0x0066cc
   });
   var meshTraceGeom = new THREE.Geometry();
   var lineTraceGeom = new THREE.Geometry();
@@ -255,7 +273,7 @@ function initLineTrace() {
 function initRotationAxis() {
   var axisMat = new THREE.LineBasicMaterial({
     color: 0x005500,
-    linewidth: 2,
+    linewidth: 2
   });
   var axisGeom = new THREE.Geometry();
   axisGeom.vertices.push(
@@ -294,7 +312,7 @@ function handlePointerMove(x, y) {
   mouseDiffY = y - mousePos.y;
   mousePos = {
     x: x,
-    y: y,
+    y: y
   };
   if (objectDragged == "scene") {
     cameraPos.x -= mouseDiffX / 200;
@@ -326,7 +344,7 @@ function handleMouseDown(event) {
 function handlePointerStart(x, y) {
   mousePos = {
     x: x,
-    y: y,
+    y: y
   };
   var rect = renderer.domElement.getBoundingClientRect();
   if (
@@ -348,48 +366,12 @@ function handleMouseUp(event) {
   objectDragged = "none";
 }
 
-// function animate() {
-//   //requestAnimationFrame(animate);
-
-//   if (animation) {
-//     // var a = new THREE.Euler(0, -0.018, 0.006, 'XYZ');
-//     var additionalQuat = new THREE.Quaternion();
-//     vectorQuaternion.set(
-//       parseFloat(dataArray[index].x),
-//       parseFloat(dataArray[index].y),
-//       parseFloat(dataArray[index].z),
-//       parseFloat(dataArray[index].w)
-//     );
-//     //additionalQuat.normalize();
-//     //vectorQuaternion.multiply(additionalQuat);
-//     // vectorQuaternion.normalize();
-//     updateRotationAxis();
-//     updateVectorVisuals();
-//     updateRotationInfo();
-//   }
-
-//   renderer.render(scene, camera);
-//   updateAxesNames();
-//   // return
-
-//   // console.log(index)
-
-//   index++;
-//   if (index >= lastIndex) {
-//     setAnimation(false);
-
-//     // TODO: restart promt
-//   } else {
-//     setTimeout(animate, 10);
-//   }
-// }
-
 function updateAxesNames() {
   distance = AXIS_LENGTH * 1.1;
   vectors = [
     new THREE.Vector3(distance, 0, 0),
     new THREE.Vector3(0, distance, 0),
-    new THREE.Vector3(0, 0, distance),
+    new THREE.Vector3(0, 0, distance)
   ];
   objects = [axisXName, axisYName, axisZName];
   for (var i = 0; i < objects.length; i++) {
@@ -466,46 +448,4 @@ function updateRotationInfo() {
   var vectorEuler = new THREE.Euler(0, 0, 0, eulerOrder);
   vectorEuler.setFromQuaternion(vectorQuaternion, eulerOrder);
   // updateRotationInfoEuler(vectorEuler);
-}
-
-function quatSliderStyle(quatValue) {
-  return (
-    "width:" +
-    Math.abs(quatValue) * 50 +
-    "%;margin-left:" +
-    (1.0 + Math.min(0, quatValue)) * 50 +
-    "%"
-  );
-}
-
-function eulerSliderStyle(eulerValue) {
-  return (
-    "width:" +
-    Math.abs(eulerValue / 3.1415) * 50 +
-    "%;margin-left:" +
-    (1.0 + Math.min(0, eulerValue / 3.1415)) * 50 +
-    "%"
-  );
-}
-
-function radToSpecific(radiansIn) {
-  if (eulerAngleFormat == "Radians") {
-    return radiansIn;
-  }
-  return THREE.Math.radToDeg(radiansIn);
-}
-
-function specificToRad(specificIn) {
-  if (eulerAngleFormat == "Radians") {
-    return specificIn;
-  }
-  return THREE.Math.degToRad(specificIn);
-}
-
-function formatNumberValue(x) {
-  string = x.toFixed(3);
-  if (string.charAt(0) != "-") {
-    string = " " + string;
-  }
-  return string;
 }
