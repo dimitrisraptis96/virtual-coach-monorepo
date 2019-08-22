@@ -49,24 +49,24 @@ init();
 THESE ARE THE WEBVIEW'S FUNCTIONS
 ******************************* */
 function clearData() {
-  // TODO: Clear data array
   dataArray = [];
 }
 
 function saveData() {
-  var fd = new FormData();
-  fd.append("d", JSON.stringify({ data: dataArray }));
+  // Split data into chunks in order to prevent size limit error
+  const CHUNK_SIZE = 500;
+  for (var i = CHUNK_SIZE; i < dataArray.length; i = i + CHUNK_SIZE) {
+    var chunk = dataArray.slice(i - CHUNK_SIZE, i);
 
-  var xhr = new XMLHttpRequest();
-  xhr.open("POST", "/save", true);
-  xhr.setRequestHeader("Content-Type", "application/json");
-
-  xhr.send(fd);
-
-  // TODO: Save data to the DB
-  // console.log(
-  //   JSON.stringify(dataArray.slice(Math.max(dataArray.length - 10, 1)))
-  // );
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/save", true);
+    xhr.setRequestHeader("Content-Type", "text/plain");
+    xhr.send(
+      JSON.stringify(chunk)
+        .replace('"', "")
+        .replace("'", "")
+    );
+  }
 }
 
 function updateQuaternion(x, y, z, w) {
@@ -84,11 +84,6 @@ function updateQuaternion(x, y, z, w) {
   updateAxesNames();
 
   renderer.render(scene, camera);
-
-  var xhr = new XMLHttpRequest();
-  xhr.open("POST", "/save", true);
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.send(JSON.stringify({ x, y, z, w, timestamp: Date.now() }));
 }
 
 function init() {
