@@ -1,11 +1,8 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    unique: false,
-    required: true
-  }
+  name: String,
+  exercises: [{ type: mongoose.Schema.Types.ObjectId, ref: "Exercise" }]
 });
 
 userSchema.pre("remove", function(next) {

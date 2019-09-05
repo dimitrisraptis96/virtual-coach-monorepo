@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 
 const exerciseSchema = new mongoose.Schema({
-  name: {
-    type: String
-  },
+  name: String,
   samples: [
     {
       x: Number,
@@ -13,10 +11,8 @@ const exerciseSchema = new mongoose.Schema({
       timestamp: String
     }
   ],
-  stats: {
-    reps: Number,
-    calories: Number
-  },
+  reps: Number,
+  calories: Number,
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 });
 

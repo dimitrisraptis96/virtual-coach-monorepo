@@ -41,6 +41,8 @@ var animation = false,
   showAxis = true;
 var rotationAxisObject = new THREE.Line();
 
+let exerciseId = "";
+
 init();
 
 /* *******************************
@@ -52,21 +54,37 @@ function clearData() {
   dataArray = [];
 }
 
-function saveData() {
+function postSamples() {
   // Split data into chunks in order to prevent size limit error
-  const CHUNK_SIZE = 500;
-  for (var i = CHUNK_SIZE; i < dataArray.length; i = i + CHUNK_SIZE) {
-    var chunk = dataArray.slice(i - CHUNK_SIZE, i);
+  const CHUNK_SIZE = 4000;
+  console.log(dataArray.length);
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/save", true);
-    xhr.setRequestHeader("Content-Type", "text/plain");
-    xhr.send(
-      JSON.stringify(chunk)
-        .replace('"', "")
-        .replace("'", "")
+  const requestsArray = [];
+
+  for (var i = 0; i < dataArray.length; i = i + CHUNK_SIZE) {
+    var chunk = dataArray.slice(i, i + CHUNK_SIZE);
+    requestsArray.push(
+      axios({
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        data: JSON.stringify({ samples: chunk, id: exerciseId }),
+        url: "/exercise"
+      })
     );
   }
+
+  axios.all(requestsArray).then(res => console.log(res));
+}
+
+async function saveData() {
+  axios({
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    url: "/exercise"
+  }).then(response => {
+    exerciseId = response.data;
+    postSamples();
+  });
 }
 
 function updateQuaternion(x, y, z, w) {
