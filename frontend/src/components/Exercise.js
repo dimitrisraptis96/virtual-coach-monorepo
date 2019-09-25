@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import { Line } from "react-chartjs-2";
 import { Link } from "react-router-dom";
+import cogoToast from "cogo-toast";
 
 const Container = styled.div`
   width: 100%;
@@ -16,7 +16,8 @@ const Container = styled.div`
 
 function deleteExercise(id) {
   axios.delete("http://localhost:8000/exercise/" + id).then(response => {
-    alert("Deleted");
+    console.log("Deleted the damn exercise");
+    cogoToast.success(`Exercise deleted! 👌`);
   });
 }
 

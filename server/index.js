@@ -2,11 +2,12 @@ import express from "express";
 import mongoose from "mongoose";
 import fs from "fs";
 import bodyParser from "body-parser";
-
 import models, { connectDb } from "./models";
-
 import getTime from "./utils/getTime";
 import data from "./exercise-data/exercise.json";
+
+const DEMO_USER = "Dimitris";
+const DEMO_EXERCISE_NAME = "Test";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -32,15 +33,6 @@ app.use(function(req, res, next) {
 app.get("/index.html", function(req, res, next) {
   res.sendFile(__dirname + "index.html");
 });
-
-// app.post("/save", function(req) {
-//   const data = JSON.parse(req.body);
-
-//   fs.writeFile(`./exercise-data/metamotionr-${getTime()}.txt`, data, err => {
-//     if (err) throw err;
-//     console.log("Exercise quaternion data from MetaMotion R saved!");
-//   });
-// });
 
 // ========================================
 // 👶 users
@@ -108,18 +100,25 @@ app.get("/exercise/:exerciseId", async (req, res) => {
 
 app.post("/exercise", async (req, res) => {
   try {
-    const users = await models.User.find({ name: "Mr. Dimitriou" }).exec();
-    const user = users[0];
+    var user = await models.User.findOne({ name: DEMO_USER }).exec();
+    if (!user) {
+      console.log(`🚨 User named "${DEMO_USER}" not found.`);
+      user = new models.User({
+        name: DEMO_USER
+      });
+      await user.save();
+      console.log(`🦸‍♂️ Just created a user with name "${DEMO_USER}"!`);
+    }
 
     const exercise = new models.Exercise({
-      name: "Curls",
+      name: DEMO_EXERCISE_NAME,
       samples: [],
       reps: Math.round(Math.random() * 10),
       calories: Math.round(Math.random() * 100),
       user: user._id
     });
 
-    user.exercise = exercise._id;
+    user.exercises.push(exercise._id);
 
     await exercise.save();
     await user.save();
@@ -136,16 +135,34 @@ app.post("/exercise", async (req, res) => {
 app.put("/exercise", async (req, res) => {
   try {
     const body = JSON.parse(req.body);
-    const { samples, id } = body;
+    const { samples, id, name } = body;
 
     const exercise = await models.Exercise.findById(id);
-    exercise.samples = [...exercise.samples, ...samples];
+
+    if (!exercise) {
+      console.log("nulll");
+    }
+
+    if (samples) {
+      exercise.samples = [...exercise.samples, ...samples];
+      console.log(
+        "💪 Append " +
+          samples.length +
+          " samples to the exercise http://localhost:3000/exercise/" +
+          id
+      );
+    }
+    if (name) {
+      const oldName = exercise.name;
+      exercise.name = name;
+      console.log(
+        `💪 Rename exercise from ${oldName} to ${name}. Link: http://localhost:3000/exercise/${id}`
+      );
+    }
+
     exercise.save();
 
     res.sendStatus(200);
-    console.log(
-      "💪 Append " + samples.length + " samples to the exercise " + id
-    );
   } catch (error) {
     console.log(error);
     res.sendStatus(500);
@@ -154,43 +171,30 @@ app.put("/exercise", async (req, res) => {
 
 app.delete("/exercise/:exerciseId", async (req, res) => {
   try {
-    await models.Exercise.deleteOne({
-      _id: req.params.exerciseId
-    });
+    const exerciseId = req.params.exerciseId;
 
-    res.sendStatus(200);
+    models.Exercise.findByIdAndRemove(exerciseId, async (err, exercise) => {
+      if (err) return res.sendStatus(200);
+
+      if (exercise) {
+        const userId = exercise.user;
+        console.log(userId);
+        const user = await models.User.findById(userId).exec();
+
+        console.log(user.exercises);
+        user.exercises = user.exercises.filter(id => id != exerciseId);
+        await user.save();
+        console.log(user.exercises);
+      } else {
+        console.log("🙅‍♀️ Exercise not found");
+      }
+
+      return res.sendStatus(200);
+    });
   } catch (error) {
     console.log(error);
     res.sendStatus(500);
   }
-});
-
-// ========================================
-// CONNECT DATABASE
-// ========================================
-
-const ERASE_DATABSE_ON_SYNC = false;
-
-connectDb().then(async () => {
-  if (ERASE_DATABSE_ON_SYNC) {
-    await Promise.all([
-      models.User.deleteMany({}),
-      models.Exercise.deleteMany({})
-    ]);
-  }
-
-  // await Promise.all([
-  //   models.Exercise.deleteMany({name: "Curls"})
-  // ]);
-  // await createDemoUserWithΕxercise();
-
-  const logger = d => console.log(d);
-  findUser(logger);
-  findExercise(logger);
-
-  app.listen(process.env.PORT, () =>
-    console.log(`Example app listening on port ${process.env.PORT}!`)
-  );
 });
 
 const createDemoUserWithΕxercise = async () => {
@@ -237,3 +241,31 @@ const findExercise = async callback => {
     return callback(docs.map(doc => doc._id));
   });
 };
+
+// ========================================
+// CONNECT DATABASE
+// ========================================
+
+const ERASE_DATABSE_ON_SYNC = false;
+
+connectDb().then(async () => {
+  if (ERASE_DATABSE_ON_SYNC) {
+    await Promise.all([
+      models.User.deleteMany({}),
+      models.Exercise.deleteMany({})
+    ]);
+  }
+
+  // await Promise.all([
+  //   models.Exercise.deleteMany({name: "Curls"})
+  // ]);
+  // await createDemoUserWithΕxercise();
+
+  const logger = d => console.log(d);
+  // findUser(logger);
+  // findExercise(logger);
+
+  app.listen(process.env.PORT, () =>
+    console.log(`Example app listening on port ${process.env.PORT}!`)
+  );
+});

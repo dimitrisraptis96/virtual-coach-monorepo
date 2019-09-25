@@ -41,7 +41,7 @@ function Exercises() {
     <Container>
       {isReady ? (
         <ListContainer>
-          {exercises.map(exercise => (
+          {exercises.reverse().map(exercise => (
             <Exercise
               samples={exercise.samples}
               numOfSamples={exercise.numOfSamples}

@@ -50,6 +50,7 @@ function User({ match }) {
                 calories={exercise.calories}
                 name={exercise.name}
                 user={exercise.user}
+                id={exercise._id}
               />
             ))}
           </List>
