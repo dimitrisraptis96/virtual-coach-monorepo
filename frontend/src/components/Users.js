@@ -2,27 +2,56 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
+import UserIcon from "./Icons/UserIcon";
 
 const Container = styled.div`
-  padding: 2rem;
+  padding: 2rem 0;
 `;
 
 const UserContainer = styled.div`
-  width: 600px;
+  width: 300px;
   padding: 1rem;
-
-  display: flex;
-  flex-direction: column;
+  margin: 0.5rem;
 
   background-color: #f5f5f5;
   border-radius: 16px;
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+
+  & > * {
+    margin-right: 2rem;
+  }
+  & > *:last-child {
+    justify-self: flex-end;
+    margin-right: 0;
+  }
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+
+    & > h4 {
+      color: #212121;
+    }
+  }
 `;
 
 const ListContainer = styled.div`
   width: 100%
 
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+  overflow-y: scroll;
+  width: 100%;
+  min-height: 308px;
+  margin-right: 1rem;
 
   & > div {
     margin-bottom: 1rem;
@@ -52,13 +81,18 @@ function Users() {
       {isReady ? (
         <ListContainer>
           {users.map(user => (
-            <UserContainer>
-              <h2>{user.name}</h2>
-              <p>
-                Number of exercises: <b>{user.exercises.length}</b>
-              </p>
-              <Link to={"/user/" + user._id}> Show user profile</Link>
-            </UserContainer>
+            <Link
+              to={"/user/" + user._id}
+              style={{ textDecoration: "none", color: "#212121" }}
+            >
+              <UserContainer>
+                <UserIcon width={40} />
+                <h2>{user.name}</h2>
+                <p>
+                  Number of exercises: <b>{user.exercises.length}</b>
+                </p>
+              </UserContainer>
+            </Link>
           ))}
         </ListContainer>
       ) : (

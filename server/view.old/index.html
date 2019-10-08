@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Quaternions - Visualisation</title>
+    <meta name="description" content="Visualising Quaternions" />
+    <meta
+      name="keywords"
+      content="Quaternion, Quaternions, Visualisation, Visualization, Calculator, Conversion, convert, Explanation, Rotation, rotate"
+    />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:image" content="/logo.png" />
+    <meta property="og:image:type" content="image/png" />
+
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="./css/style_mobile.css"
+      media="screen, handheld"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="./css/style.css"
+      media="screen  and (min-width: 40.5em)"
+    />
+  </head>
+
+  <body>
+    <main class="background">
+      <div id="container">
+        <div id="renderDiv" class="containerChild containerChildLeft">
+          <h3 id="checkJStext" class="checkJStext">
+            Please check if JavaScript and
+            <a href="http://get.webgl.org">WebGL</a> are turned on in your
+            browser.
+          </h3>
+        </div>
+        <div id="value"></div>
+      </div>
+    </main>
+  </body>
+
+  <script>
+    var checkJStext = document.getElementById("checkJStext");
+    checkJStext.parentNode.removeChild(checkJStext);
+  </script>
+  <script src="./js/data.js"></script>
+  <script src="./js/samples.js"></script>
+  <script src="./js/three.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="./js/index.js"></script>
+</html>

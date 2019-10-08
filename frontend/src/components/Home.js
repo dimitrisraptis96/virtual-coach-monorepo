@@ -53,46 +53,10 @@ function Home({}) {
 
   return (
     <div>
-      <Form onSubmit={createUser}>
-        <Input
-          name="username"
-          label="User Name"
-          value={name}
-          onChange={setName}
-        />
-        <Button
-          appearance="primary"
-          onClick={createUser}
-          height={40}
-          style={{ textAlign: "center" }}
-          type="submit"
-        >
-          Create User
-        </Button>
-      </Form>
-      <Form onSubmit={renameExercise}>
-        <Input
-          name="exerciseId"
-          label="Exercise ID"
-          value={exerciseId}
-          onChange={setExerciseId}
-        />
-        <Input
-          name="name"
-          label="New Name"
-          value={exerciseName}
-          onChange={setExerciseName}
-        />
-        <Button
-          appearance="primary"
-          onClick={renameExercise}
-          height={40}
-          style={{ textAlign: "center" }}
-          type="submit"
-        >
-          Rename Exercise
-        </Button>
-      </Form>
+      <p>Total Users: </p>
+      <p>Total Exercises: </p>
+      <p>Average samples per exercise: </p>
+      <p>Last exercise: </p>
     </div>
   );
 }

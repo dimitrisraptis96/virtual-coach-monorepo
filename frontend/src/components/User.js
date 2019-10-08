@@ -41,7 +41,7 @@ function User({ match }) {
     <Container>
       {isReady ? (
         <UserContainer>
-          <h2>{user.name}</h2>
+          <h1>{user.name}</h1>
           <List>
             {user.exercises.map(exercise => (
               <Exercise
@@ -50,6 +50,7 @@ function User({ match }) {
                 calories={exercise.calories}
                 name={exercise.name}
                 user={exercise.user}
+                username={user.name}
                 id={exercise._id}
               />
             ))}

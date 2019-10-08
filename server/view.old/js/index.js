@@ -2,6 +2,7 @@ var camera, scene, renderer;
 var geometry, material, mesh;
 var rendererHeight, rendererWidth;
 
+const DEBUG_MODE = true;
 const WIDTH_FACTOR = 0.49,
   HEIGHT_FACTOR = 0.8;
 
@@ -23,12 +24,6 @@ var lastIndex = dataArray.length;
 
 var vectorObject = new THREE.Line();
 var vectorQuaternion = new THREE.Quaternion();
-// vectorQuaternion.set(
-//   dataArray[0].x,
-//   dataArray[0].y,
-//   dataArray[0].z,
-//   dataArray[0].w
-// );
 var rotationAxis = new THREE.Vector3(0, 1, 0);
 var axisXName, axisYName, axisZName;
 var eulerOrder = "XYZ";
@@ -101,7 +96,24 @@ function updateQuaternion(x, y, z, w) {
   // updateRotationInfo();
   updateAxesNames();
 
+  var demoVector = new THREE.Vector3(1, 0, 0);
+  demoVector.applyQuaternion(vectorQuaternion);
+  var xyPlane = new THREE.Vector3(1, 0, 0);
+  var theta = (demoVector.angleTo(xyPlane) * 180) / Math.PI;
+  console.log(theta);
+
   renderer.render(scene, camera);
+}
+
+if (DEBUG_MODE) {
+  function run() {
+    for (var i = 1; i < samples.length; i++) {
+      const { x, y, z, w } = samples[i];
+      setTimeout(() => updateQuaternion(x, y, z, w, 0.1), i * 60);
+    }
+  }
+
+  setTimeout(run, 2000);
 }
 
 function init() {
@@ -230,7 +242,7 @@ function initAxesNames() {
 
 function initVector() {
   var vectorMat = new THREE.LineBasicMaterial({
-    color: 0x000000,
+    color: 0x00f0000,
     linewidth: 3
   });
   var vectorGeom = new THREE.Geometry();
@@ -285,7 +297,7 @@ function initLineTrace() {
 
 function initRotationAxis() {
   var axisMat = new THREE.LineBasicMaterial({
-    color: 0x005500,
+    color: 0xdddddd,
     linewidth: 2
   });
   var axisGeom = new THREE.Geometry();
@@ -296,6 +308,7 @@ function initRotationAxis() {
     new THREE.Vector3().copy(rotationAxis).multiplyScalar(AXIS_LENGTH)
   );
   rotationAxisObject = new THREE.Line(axisGeom, axisMat);
+  scene.add(rotationAxisObject);
 }
 
 function onWindowResize() {
@@ -426,22 +439,23 @@ function updateVectorVisuals() {
   vectorObject.quaternion.y = vectorQuaternion.y;
   vectorObject.quaternion.z = vectorQuaternion.z;
 
-  for (var i = 1; i <= TRACE_SEGMENTS + 1; i++) {
-    var currentQuat = new THREE.Quaternion().slerp(
-      vectorQuaternion,
-      (i - 1) / TRACE_SEGMENTS
-    );
-    var currentVector = new THREE.Vector3(AXIS_LENGTH, 0, 0);
-    currentVector.applyQuaternion(currentQuat);
-    meshTraceObject.geometry.vertices[i].x = currentVector.x;
-    meshTraceObject.geometry.vertices[i].y = currentVector.y;
-    meshTraceObject.geometry.vertices[i].z = currentVector.z;
-    lineTraceObject.geometry.vertices[i - 1].x = currentVector.x;
-    lineTraceObject.geometry.vertices[i - 1].y = currentVector.y;
-    lineTraceObject.geometry.vertices[i - 1].z = currentVector.z;
-  }
-  meshTraceObject.geometry.verticesNeedUpdate = true;
-  lineTraceObject.geometry.verticesNeedUpdate = true;
+  // The following code section is about the traceline update
+  // for (var i = 1; i <= TRACE_SEGMENTS + 1; i++) {
+  //   var currentQuat = new THREE.Quaternion().slerp(
+  //     vectorQuaternion,
+  //     (i - 1) / TRACE_SEGMENTS
+  //   );
+  //   var currentVector = new THREE.Vector3(AXIS_LENGTH, 0, 0);
+  //   currentVector.applyQuaternion(currentQuat);
+  //   meshTraceObject.geometry.vertices[i].x = currentVector.x;
+  //   meshTraceObject.geometry.vertices[i].y = currentVector.y;
+  //   meshTraceObject.geometry.vertices[i].z = currentVector.z;
+  //   lineTraceObject.geometry.vertices[i - 1].x = currentVector.x;
+  //   lineTraceObject.geometry.vertices[i - 1].y = currentVector.y;
+  //   lineTraceObject.geometry.vertices[i - 1].z = currentVector.z;
+  // }
+  // meshTraceObject.geometry.verticesNeedUpdate = true;
+  // lineTraceObject.geometry.verticesNeedUpdate = true;
 
   var rotAxisVec = new THREE.Vector3()
     .copy(rotationAxis)

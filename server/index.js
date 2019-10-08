@@ -7,7 +7,7 @@ import getTime from "./utils/getTime";
 import data from "./exercise-data/exercise.json";
 
 const DEMO_USER = "Dimitris";
-const DEMO_EXERCISE_NAME = "Test";
+const DEMO_EXERCISE_NAME = "Bicep Curl";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -28,7 +28,7 @@ app.use(function(req, res, next) {
 });
 
 // ========================================
-// 📱 ANDROID
+// 📱 ANDROID APP VIEW
 // ========================================
 app.get("/index.html", function(req, res, next) {
   res.sendFile(__dirname + "index.html");
@@ -79,13 +79,16 @@ app.post("/user", async (req, res) => {
 // ========================================
 app.get("/exercises", async (req, res) => {
   try {
-    const exercises = await models.Exercise.find();
+    const exercises = await models.Exercise.find(
+      {},
+      { name: 1, _id: 1, user: 1 }
+    ).populate("user");
 
     res.send(
       exercises.map(exercise => ({
         name: exercise.name,
         id: exercise._id,
-        numOfSamples: exercise.samples.length
+        username: exercise.user ? exercise.user.name : "-"
       }))
     );
   } catch (error) {

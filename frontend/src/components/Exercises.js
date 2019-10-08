@@ -4,14 +4,23 @@ import styled from "styled-components";
 import Exercise from "./Exercise";
 
 const Container = styled.div`
-  padding: 2rem;
+  padding: 2rem 0;
 `;
 
 const ListContainer = styled.div`
   width: 100%
 
+  ${"" /* display: flex;
+  flex-direction: column; */}
+
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+  overflow-y: scroll;
+  width: 100%;
+  min-height: 308px;
+  margin-right: 1rem;
 
   & > div {
     margin-bottom: 1rem;
@@ -44,11 +53,10 @@ function Exercises() {
           {exercises.reverse().map(exercise => (
             <Exercise
               samples={exercise.samples}
-              numOfSamples={exercise.numOfSamples}
               reps={exercise.reps}
               calories={exercise.calories}
               name={exercise.name}
-              user={exercise.user}
+              username={exercise.username}
               id={exercise.id}
             />
           ))}
