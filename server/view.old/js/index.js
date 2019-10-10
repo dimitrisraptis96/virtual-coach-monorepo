@@ -2,7 +2,7 @@ var camera, scene, renderer;
 var geometry, material, mesh;
 var rendererHeight, rendererWidth;
 
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 const WIDTH_FACTOR = 0.49,
   HEIGHT_FACTOR = 0.8;
 

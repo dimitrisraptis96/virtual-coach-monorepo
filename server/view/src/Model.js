@@ -2,6 +2,28 @@ var vectorQuaternion = new THREE.Quaternion();
 var rotationAxis = new THREE.Vector3(0, 1, 0);
 var DEBUG_MODE = false;
 
+function getEuler(x, y, z, w) {
+  var euler = {
+    roll: null,
+    pitch: null,
+    yaw: null
+  };
+
+  // Calculate roll (x-axis rotation)
+  euler.roll = Math.atan2(2 * (w * x + z * y), 1 - 2 * (x * x + y * y));
+  // Calculate pitch (y-axis rotation))
+  const sinp = 2 * (w * y - z * x);
+  if (Math.abs(sinp) >= 1) {
+    euler.pitch = Math.sign(sinp) * Math.abs(Math.PI / 2);
+  } else {
+    euler.pitch = Math.asin(sinp);
+  }
+  // Calculate yaw (z-axis rotation)
+  euler.yaw = Math.atan2(2 * (w * z + x * y), 1 - 2 * (z * z + y * y));
+
+  return euler;
+}
+
 function updateQuaternion(x, y, z, w, delta) {
   vectorQuaternion.set(
     parseFloat(x),
@@ -21,6 +43,7 @@ function updateQuaternion(x, y, z, w, delta) {
   }
 
   THREE.SEA3D.AnimationHandler.update(delta);
+  const { roll, pitch, yaw } = getEuler(x, y, z, w);
 
   if (main.model) {
     const forearm = main.model.b["lForeArm"];
@@ -52,7 +75,10 @@ function updateQuaternion(x, y, z, w, delta) {
     const PHI_MAX = 1;
     const phiNorm = (phi - PHI_MIN) / (PHI_MAX - PHI_MIN);
 
-    forearm.rotation.set(0, angle, 0.5, "XYZ");
+    forearm.rotation.set(roll, pitch, yaw, "YZX");
+
+    // TODO: OLD WORKING HERE
+    // forearm.rotation.set(0, angle, 0.5, "XYZ");
     // (left) 1 => -1.8 (right)
     // root.rotation.set(3.1, PHI_MAX - phiNorm * 2.8, 1.5, "XYZ");
   }
