@@ -1,4 +1,4 @@
-var vectorQuaternion = new THREE.Quaternion();
+var MUIquaternion = new THREE.Quaternion();
 var rotationAxis = new THREE.Vector3(0, 1, 0);
 var DEBUG_MODE = false;
 
@@ -24,72 +24,140 @@ function getEuler(x, y, z, w) {
   return euler;
 }
 
-function updateQuaternion(x, y, z, w, delta) {
-  vectorQuaternion.set(
-    parseFloat(x),
-    parseFloat(y),
-    parseFloat(z),
-    parseFloat(w)
-  );
+function calculateAngle(quaternion, forearm, root) {
+  var demoVector = new THREE.Vector3(1, 0, 0);
+  demoVector.applyQuaternion(quaternion);
+  var xyPlane = new THREE.Vector3(demoVector.x, demoVector.y, 0);
+  var xzPlane = new THREE.Vector3(demoVector.x, 0, demoVector.z);
 
-  var theta = Math.acos(vectorQuaternion.w) * 2;
+  var theta = (demoVector.angleTo(xyPlane) * 180) / Math.PI;
+  var phi = (demoVector.angleTo(xzPlane) * 180) / Math.PI;
+  // console.log(phi);
+
+  const THETA_MAX = 2.5;
+  const THETA_MIN = 1;
+  const sign = demoVector.z > 0 ? 1 : -1;
+  // const thetaNorm = (phi - PHI_MIN) / (PHI_MAX - PHI_MIN);
+
+  var thetaNorm = (sign * ((THETA_MAX / 2) * theta)) / 90;
+  const angle = THETA_MAX / 2 + thetaNorm;
+
+  const PHI_MIN = -1.8;
+  const PHI_MAX = 1;
+  const phiNorm = (phi - PHI_MIN) / (PHI_MAX - PHI_MIN);
+
+  // TODO: OLD WORKING HERE
+  forearm.rotation.set(0, angle, 0.5, "XYZ");
+  // (left) 1 => -1.8 (right)
+  root.rotation.set(3.1, PHI_MAX - phiNorm * 2.8, 1.5, "XYZ");
+}
+
+function updateQuaternion(x, y, z, w) {
+  // TODO: Here make the tranfmation
+  // TODO: Understand the coordinate system of the hand (this will be the hack)
+  MUIquaternion.set(parseFloat(x), parseFloat(y), parseFloat(z), parseFloat(w));
+
+  var theta = Math.acos(MUIquaternion.w) * 2;
   var sin = Math.sin(theta / 2);
   if (sin >= 0.01 || sin <= -0.01) {
-    //console.log(quatY + "  "+ quatZ + "  "+ sin)
-    rotationAxis.x = vectorQuaternion.x / sin;
-    rotationAxis.y = vectorQuaternion.y / sin;
-    rotationAxis.z = vectorQuaternion.z / sin;
+    rotationAxis.x = MUIquaternion.x / sin;
+    rotationAxis.y = MUIquaternion.y / sin;
+    rotationAxis.z = MUIquaternion.z / sin;
     rotationAxis.normalize();
+  } else {
+    return;
   }
 
-  THREE.SEA3D.AnimationHandler.update(delta);
-  const { roll, pitch, yaw } = getEuler(x, y, z, w);
+  const adjustQuaternion = new THREE.Quaternion();
+  adjustQuaternion.setFromAxisAngle(
+    new THREE.Vector3(rotationAxis.y, -rotationAxis.z, rotationAxis.x), // working
+    // new THREE.Vector3(rotationAxis.y, -rotationAxis.x, -rotationAxis.z),
+    theta
+  );
+
+  // const { roll, pitch, yaw } = getEuler(
+  //   vectorQuaternion.x,
+  //   vectorQuaternion.y,
+  //   vectorQuaternion.z,
+  //   vectorQuaternion.w
+  // );
 
   if (main.model) {
     const forearm = main.model.b["lForeArm"];
+
+    // *** Old working code below ***
     // const root = main.model.b["root"];
+    // calculateAngle(vectorQuaternion, forearm, root)
 
-    // TODO TESTING CODE
-    var demoVector = new THREE.Vector3(1, 0, 0);
-    demoVector.applyQuaternion(vectorQuaternion);
-    var xyPlane = new THREE.Vector3(demoVector.x, demoVector.y, 0);
-    var xzPlane = new THREE.Vector3(demoVector.x, 0, demoVector.z);
-    var theta = (demoVector.angleTo(xyPlane) * 180) / Math.PI;
-    console.log(theta);
+    // forearm.position.set(0, 0, 0);
 
-    // if (theta > 90) theta = 90;
-    // else if (theta < 0) theta = 0;
+    // forearm.up = new THREE.Vector3(0, 0, 1);
 
-    var phi = (demoVector.angleTo(xzPlane) * 180) / Math.PI;
-    // console.log(phi);
+    // Try to fix the angels with a quaternion multiplication
+    // ========================================================
+    // var firstRotation = new THREE.Quaternion();
+    // firstRotation.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2);
+    // vectorQuaternion.multiply(firstRotation);
+    // vectorQuaternion.normalize();
 
-    const THETA_MAX = 2.5;
-    const THETA_MIN = 1;
-    const sign = demoVector.z > 0 ? 1 : -1;
-    // const thetaNorm = (phi - PHI_MIN) / (PHI_MAX - PHI_MIN);
+    // var secondRotation = new THREE.Quaternion();
+    // secondRotation.setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI);
+    // vectorQuaternion.multiply(secondRotation);
+    // vectorQuaternion.normalize();
 
-    var thetaNorm = (sign * ((THETA_MAX / 2) * theta)) / 90;
-    const angle = THETA_MAX / 2 + thetaNorm;
+    forearm.setRotationFromQuaternion(adjustQuaternion);
+    // forearm.rotateY(-Math.PI / 8);
+    // forearm.rotateY(Math.PI / 2);
+    // forearm.rotateZ(Math.PI);
 
-    const PHI_MIN = -1.8;
-    const PHI_MAX = 1;
-    const phiNorm = (phi - PHI_MIN) / (PHI_MAX - PHI_MIN);
+    // forearm.rotateY(-Math.PI / 2);
+    // forearm.rotation.set(roll, pitch, yaw, "ZXY");
 
-    forearm.rotation.set(roll, pitch, yaw, "YZX");
+    // var v = new THREE.Euler();
+    // v.setFromQuaternion(vectorQuaternion);
+    // forearm.rotation.set(v.x, v.y, v.z, "ΖΧΥ");
+  }
+  THREE.SEA3D.AnimationHandler.update(0);
+}
 
-    // TODO: OLD WORKING HERE
-    // forearm.rotation.set(0, angle, 0.5, "XYZ");
-    // (left) 1 => -1.8 (right)
-    // root.rotation.set(3.1, PHI_MAX - phiNorm * 2.8, 1.5, "XYZ");
+function initRotate() {
+  THREE.SEA3D.AnimationHandler.update(0);
+
+  if (main.model) {
+    const forearm = main.model.b["lForeArm"];
+    // forearm.rotateX(0);
+    // forearm.rotateY(Math.PI / 2);
+    // forearm.translateZ(20);
+    // forearm.rotateZ(Math.PI / 3);
+    // forearm.up = new THREE.Vector3(0, 0, 1);
+    // forearm.up(new THREE.Vector3(1, 0, 0));
+  }
+}
+
+function rotateAxis() {
+  THREE.SEA3D.AnimationHandler.update(0);
+
+  if (main.model) {
+    const forearm = main.model.b["lForeArm"];
+    forearm.rotateX(Math.PI / 20);
+
+    forearm.setRotationFromQuaternion(quaternion);
   }
 }
 
 if (DEBUG_MODE) {
   function run() {
+    initRotate();
+
+    // return;
     for (var i = 1; i < samples.length; i++) {
       const { x, y, z, w } = samples[i];
-      setTimeout(() => updateQuaternion(x, y, z, w, 0.1), i * 60);
+      setTimeout(() => updateQuaternion(x, y, z, w, 0.1), i * 10);
     }
+
+    // for (var j = 1; j < 2; j++) {
+    //   setTimeout(() => rotateAxis(), j * 100);
+    // }
   }
 
   setTimeout(run, 2000);
