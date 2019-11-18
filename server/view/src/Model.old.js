@@ -1,6 +1,154 @@
+var IMUquaternion = new THREE.Quaternion();
+var rotationAxis = new THREE.Vector3(0, 1, 0);
+var DEBUG_MODE = true;
+
 var geometry = new THREE.BoxBufferGeometry(1, 1, 1);
 var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 var mesh = new THREE.Mesh(geometry, material);
+
+function getEuler(x, y, z, w) {
+  var euler = {
+    roll: null,
+    pitch: null,
+    yaw: null
+  };
+
+  // Calculate roll (x-axis rotation)
+  euler.roll = Math.atan2(2 * (w * x + z * y), 1 - 2 * (x * x + y * y));
+  // Calculate pitch (y-axis rotation))
+  const sinp = 2 * (w * y - z * x);
+  if (Math.abs(sinp) >= 1) {
+    euler.pitch = Math.sign(sinp) * Math.abs(Math.PI / 2);
+  } else {
+    euler.pitch = Math.asin(sinp);
+  }
+  // Calculate yaw (z-axis rotation)
+  euler.yaw = Math.atan2(2 * (w * z + x * y), 1 - 2 * (z * z + y * y));
+
+  return euler;
+}
+
+function calculateAngle(quaternion, forearm, root) {
+  var demoVector = new THREE.Vector3(1, 0, 0);
+  demoVector.applyQuaternion(quaternion);
+  var xyPlane = new THREE.Vector3(demoVector.x, demoVector.y, 0);
+  var xzPlane = new THREE.Vector3(demoVector.x, 0, demoVector.z);
+
+  var theta = (demoVector.angleTo(xyPlane) * 180) / Math.PI;
+  var phi = (demoVector.angleTo(xzPlane) * 180) / Math.PI;
+  // console.log(phi);
+
+  const THETA_MAX = 2.5;
+  const THETA_MIN = 1;
+  const sign = demoVector.z > 0 ? 1 : -1;
+  // const thetaNorm = (phi - PHI_MIN) / (PHI_MAX - PHI_MIN);
+
+  var thetaNorm = (sign * ((THETA_MAX / 2) * theta)) / 90;
+  const angle = THETA_MAX / 2 + thetaNorm;
+
+  const PHI_MIN = -1.8;
+  const PHI_MAX = 1;
+  const phiNorm = (phi - PHI_MIN) / (PHI_MAX - PHI_MIN);
+
+  // TODO: OLD WORKING HERE
+  forearm.rotation.set(0, angle, 0.5, "XYZ");
+  // (left) 1 => -1.8 (right)
+  root.rotation.set(3.1, PHI_MAX - phiNorm * 2.8, 1.5, "XYZ");
+}
+
+function updateQuaternion(x, y, z, w) {
+  // This is the pure Quaternion sampled from the MUI
+  IMUquaternion.set(parseFloat(x), parseFloat(y), parseFloat(z), parseFloat(w));
+
+  // Calculate quaternion axis
+  var theta = Math.acos(IMUquaternion.w) * 2;
+  var sin = Math.sin(theta / 2);
+  if (sin >= 0.01 || sin <= -0.01) {
+    rotationAxis.x = IMUquaternion.x / sin;
+    rotationAxis.y = IMUquaternion.y / sin;
+    rotationAxis.z = IMUquaternion.z / sin;
+    rotationAxis.normalize();
+    console.log(
+      rotationAxis.x.toFixed(2),
+      rotationAxis.y.toFixed(2),
+      rotationAxis.x.toFixed(2)
+    );
+    console.log(theta);
+  } else {
+    return;
+  }
+
+  const adjustQuaternion = new THREE.Quaternion();
+  const axis = new THREE.Vector3(
+    rotationAxis.x,
+    rotationAxis.y,
+    rotationAxis.z
+  );
+  adjustQuaternion.setFromAxisAngle(axis, theta);
+
+  // const rotateZQuat = new THREE.Quaternion();
+  // const zAxis = new THREE.Vector3(0, 0, 1);
+  // rotateZQuat.setFromAxisAngle(zAxis, Math.PI / 2);
+  // adjustQuaternion.multiply(rotateZQuat);
+
+  if (main.model) {
+    const forearm = main.model.b["lForeArm"];
+    var debugHandAxes = new THREE.AxesHelper(20);
+    forearm.add(debugHandAxes);
+    forearm.setRotationFromQuaternion(IMUquaternion);
+    // forearm.position.set(0, 0, 0);
+  }
+  THREE.SEA3D.AnimationHandler.update(0);
+}
+
+function rotateAxis() {
+  THREE.SEA3D.AnimationHandler.update(0);
+
+  if (main.model) {
+    const forearm = main.model.b["lForeArm"];
+    forearm.rotateX(Math.PI / 20);
+
+    forearm.setRotationFromQuaternion(quaternion);
+  }
+}
+
+function showHandAxis() {
+  THREE.SEA3D.AnimationHandler.update(0);
+
+  if (main.model) {
+    const forearm = main.model.b["lForeArm"];
+    var debugHandAxes = new THREE.AxesHelper(20);
+    forearm.add(debugHandAxes);
+  }
+  THREE.SEA3D.AnimationHandler.update(0);
+}
+
+function initSession() {
+  THREE.SEA3D.AnimationHandler.update(0);
+  if (main.model) {
+    const forearm = main.model.b["lForeArm"];
+    var debugHandAxes = new THREE.AxesHelper(20);
+    forearm.add(debugHandAxes);
+  }
+}
+
+if (DEBUG_MODE) {
+  // setTimeout(() => showHandAxis(0, 0, 0, 1), 2000);
+
+  function run() {
+    showHandAxis(0, 0, 0, 1);
+    // initRotate();
+
+    for (var i = 1; i < samples.length; i++) {
+      const { x, y, z, w } = samples[i];
+      setTimeout(() => updateQuaternion(x, y, z, w), i * 20);
+    }
+  }
+
+  setTimeout(run, 2000);
+} else {
+  setTimeout(initSession, 2000);
+}
 
 var Model = function(type, meshs, morph) {
   if (morph === undefined) morph = false;
