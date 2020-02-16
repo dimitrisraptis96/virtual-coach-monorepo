@@ -288,7 +288,7 @@ var view = (function() {
 
       var options = {
         antialias: this.isMobile ? false : true,
-        alpha: this.isMobile ? false : true,
+        alpha: true,
         stencil: false,
         depth: true,
         precision: "highp",

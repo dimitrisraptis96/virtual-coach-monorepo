@@ -35,6 +35,38 @@ app.get("/index.html", function(req, res, next) {
 });
 
 // ========================================
+// 🧭 Calibration
+// ========================================
+app.get("/calibration", async (req, res) => {
+  try {
+    const calibrationData = await models.Calibration.find().exec();
+    res.send(calibrationData);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+app.put("/calibration", async (req, res) => {
+  try {
+    const body = JSON.parse(req.body);
+    const { start, end } = body;
+    console.log(body);
+
+    const calibration = new models.Calibration({
+      start,
+      end
+    });
+
+    await calibration.save();
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500);
+  }
+});
+
+// ========================================
 // 👶 users
 // ========================================
 app.get("/users", async (req, res) => {
@@ -128,7 +160,7 @@ app.post("/exercise", async (req, res) => {
 
     res.send(exercise._id);
 
-    console.log("🏋️‍♀️ Exercise created");
+    console.log("🏋️‍♀️ Exercise created " + exercise._id);
   } catch (error) {
     console.log(error);
     res.sendStatus(500);
@@ -138,9 +170,12 @@ app.post("/exercise", async (req, res) => {
 app.put("/exercise", async (req, res) => {
   try {
     const body = JSON.parse(req.body);
+
     const { samples, id, name } = body;
 
-    const exercise = await models.Exercise.findById(id);
+    const exerciseId = mongoose.Types.ObjectId(id);
+
+    const exercise = await models.Exercise.findById(exerciseId);
 
     if (!exercise) {
       console.log("nulll");
