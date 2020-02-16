@@ -53,13 +53,13 @@ class Exercise {
 
   setMode(newMode) {
     this.mode = newMode;
-    document.getElementById("mode").innerHTML = this.mode + " mode";
+    // document.getElementById("mode").innerHTML = this.mode + " mode";
   }
 
   increaseReps() {
     this.reps = this.reps + 1;
 
-    document.getElementById("reps").innerHTML = this.reps + " reps";
+    document.getElementById("reps").innerHTML = this.reps;
   }
 
   decreaseReps() {
