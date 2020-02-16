@@ -1,7 +1,7 @@
 var IMUquaternion = new THREE.Quaternion();
 var rotationAxis = new THREE.Vector3(0, 1, 0);
 const exercise = new Exercise();
-var DEBUG_MODE = true;
+var DEBUG_MODE = false;
 
 function getRotationAxisAndTheta(quaternion) {
   var rotationAxis = new THREE.Vector3(0, 1, 0);
