@@ -17,7 +17,7 @@
     "server": "cd ./server && npm run dev",
     "frontend": "cd ./frontend && npm run start",
     "database": "mongod --dbpath ~/data/db",
-    "start": "concurrently \"npm run database\" \"npm run server\""
+    "start": "concurrently \"npm run frontend\" \"npm run server\""
   },
   "devDependencies": {
     "concurrently": "^5.0.0"
