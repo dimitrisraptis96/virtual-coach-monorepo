@@ -96,12 +96,12 @@ function startProcessing() {
 
     if (IS_SAVE_ENABLED) saveData(calibrationSamples);
 
+    //TODO: Start exercise
     resumeExercise();
     calibrationSamples = [];
-    //TODO: Start exercise
 
     // TODO: Add the metrics panel here
-    document.getElementById("reps").style.opacity = "1";
+    document.getElementById("upper-card").style.opacity = "1";
     document.getElementById("metrics").style.opacity = "1";
   }, 3000);
 }
@@ -109,6 +109,10 @@ function startProcessing() {
 function finishExercise() {
   exercise.stop();
   // TODO: here show the end screen
+}
+
+function radToDegrees(angle) {
+  return angle * (180 / Math.PI);
 }
 
 function predict(x, y, z, w) {
@@ -132,7 +136,7 @@ function predict(x, y, z, w) {
   //   exercise.start();
   // }
   //   const degrees = Math.round(theta * (180 / Math.PI));
-  exercise.update(theta);
+  exercise.update(radToDegrees(theta));
 }
 
 function pauseExercise() {

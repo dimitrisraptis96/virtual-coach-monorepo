@@ -65,7 +65,7 @@ class Exercise {
   decreaseReps() {
     this.reps = this.reps - 1;
 
-    document.getElementById("reps").innerHTML = this.reps + " reps";
+    document.getElementById("reps").innerHTML = this.reps;
   }
 
   calculateMode(avg, mode) {
@@ -73,8 +73,6 @@ class Exercise {
     // const max = Math.max(...this.previous);
     // if (Math.abs(max - min) > 5) return;
     console.log(avg);
-    document.getElementById("calories").innerHTML = this.reps + " reps";
-
     const current = avg;
 
     switch (mode) {
