@@ -1,7 +1,7 @@
 const WINDOW = 20;
 const FACTOR = 10;
 const MIN = 0.2;
-const POINTS_BETWEEN = 20;
+const POINTS_BETWEEN = 100;
 
 var startingPoint = 0,
   endingPoint = 0;
@@ -90,7 +90,10 @@ function predictPosition(testingPoint) {
   );
   const minDistance = Math.min(...distancesFromPositions);
   const posIndex = distancesFromPositions.indexOf(minDistance);
+  document.getElementById("speed").innerHTML = posIndex;
+
   const theta = (Math.PI * posIndex) / POINTS_BETWEEN;
+
   return theta;
 }
 
