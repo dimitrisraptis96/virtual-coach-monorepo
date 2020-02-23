@@ -1,19 +1,24 @@
 var IMUquaternion = new THREE.Quaternion();
 var rotationAxis = new THREE.Vector3(0, 1, 0);
 const exercise = new Exercise();
-var DEBUG_MODE = false;
+const timer = new WorkoutTimer();
+
+const DEBUG_MODE = false;
 const CALIBRATION_STEPS = 100;
 const CALIBRATION_DELAY = 30;
 const IS_SAVE_ENABLED = false;
 
-var calibrationSamples = [];
+var isWorkingOut = false;
+
+var calibrationSamples = DEBUG_MODE ? samples : [];
 
 const STATES = {
   INTRO: 0,
   CALIBRATION: 1,
   PROCESSING: 2,
   PREDICTION: 3,
-  FINISH: 4
+  FINISH: 4,
+  IDLE: 5
 };
 
 var currentState = STATES.INTRO;
@@ -91,10 +96,10 @@ function startProcessing() {
 
     if (IS_SAVE_ENABLED) saveData(calibrationSamples);
 
-    currentState = STATES.PREDICTION;
+    resumeExercise();
     calibrationSamples = [];
     //TODO: Start exercise
-    exercise.start();
+
     // TODO: Add the metrics panel here
     document.getElementById("reps").style.opacity = "1";
     document.getElementById("metrics").style.opacity = "1";
@@ -102,6 +107,7 @@ function startProcessing() {
 }
 
 function finishExercise() {
+  exercise.stop();
   // TODO: here show the end screen
 }
 
@@ -110,8 +116,6 @@ function predict(x, y, z, w) {
   console.log(sample);
 
   const theta = predictPosition(sample);
-
-  document.getElementById("calories").innerHTML = theta.toFixed();
 
   // console.log("Predicted theta: " + theta);
 
@@ -129,6 +133,28 @@ function predict(x, y, z, w) {
   // }
   //   const degrees = Math.round(theta * (180 / Math.PI));
   exercise.update(theta);
+}
+
+function pauseExercise() {
+  const ctaButton = document.getElementById("cta-button");
+  ctaButton.innerHTML = "Resume Workout!";
+  ctaButton.style.backgroundColor = "#2705ad";
+
+  currentState = STATES.IDLE;
+  exercise.stop();
+  timer.stop();
+  isWorkingOut = !isWorkingOut;
+}
+
+function resumeExercise() {
+  const ctaButton = document.getElementById("cta-button");
+  ctaButton.innerHTML = "Pause Exercise";
+  ctaButton.style.backgroundColor = "red";
+
+  currentState = STATES.PREDICTION;
+  timer.start();
+  exercise.start();
+  isWorkingOut = !isWorkingOut;
 }
 
 function initSession() {
@@ -161,6 +187,13 @@ function intro() {
 
       document.getElementById("intro").style.opacity = "0";
       setTimeout(calibration, 500);
+    });
+    setupButton("cta-button", () => {
+      if (isWorkingOut) {
+        pauseExercise();
+      } else {
+        resumeExercise();
+      }
     });
   } else {
     setTimeout(intro, 200);

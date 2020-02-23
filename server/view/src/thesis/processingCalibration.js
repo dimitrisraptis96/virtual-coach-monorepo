@@ -90,7 +90,6 @@ function predictPosition(testingPoint) {
   );
   const minDistance = Math.min(...distancesFromPositions);
   const posIndex = distancesFromPositions.indexOf(minDistance);
-  document.getElementById("speed").innerHTML = posIndex;
 
   const theta = (Math.PI * posIndex) / POINTS_BETWEEN;
 
