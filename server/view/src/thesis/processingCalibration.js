@@ -91,9 +91,9 @@ function predictPosition(testingPoint) {
   const minDistance = Math.min(...distancesFromPositions);
   const posIndex = distancesFromPositions.indexOf(minDistance);
 
-  const theta = (Math.PI * posIndex) / POINTS_BETWEEN;
+  const fractionOfMovement = posIndex / POINTS_BETWEEN;
 
-  return theta;
+  return fractionOfMovement;
 }
 
 function findEndingPoint(array) {

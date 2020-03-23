@@ -3,25 +3,16 @@ const MODE_TOP_UP = 2;
 const MODE_TOP_DOWN = 3;
 const MODE_BOTTOM_DOWN = 4;
 
-// const DEGREE_RANGE = 180;
-// const LOWER_BOUND = Math.round(0.2 * DEGREE_RANGE);
-// const UPPER_BOUND = Math.round(0.8 * DEGREE_RANGE);
+const m = 75; // kg;
+const h = 0.18; // m;
+const g = 9.8; // m/s^2;
+const energyPerRep = m * g * h; //1323 Joule per rep
+const caloriesPerRep = energyPerRep / 4184; // 0.31 kcal per rep
 
-// const BOUNDS = [LOWER_BOUND, UPPER_BOUND];
-const MIN_DIST = 10;
-
-const G = 9.8; // m/s^2;
-
-const STATE = {
-  IDLE: "IDLE",
-  START_POINT: "START_POINT",
-  MIDDLE_POINT: "MIDDLE_POINT",
-  END_POINT: "END_POINT"
-};
 // const power = calories * reps / duration; // Watt
 
 class Exercise {
-  constructor(m /*kg*/, h /*m*/, lowerBound, upperBound) {
+  constructor() {
     this.duration = 0;
     this.isExercising = false;
     this.reps = 0;
@@ -29,12 +20,7 @@ class Exercise {
     this.calories = 0;
     this.power = 0;
     this.mode = MODE_BOTTOM_UP;
-    this.state = STATE.IDLE;
     this.previous = [];
-    this.energyPerRep = m * G * h; //1323 Joule per rep
-    this.caloriesPerRep = this.energyPerRep / 4184; // 0.31 kcal per rep
-
-    this.bounds = [lowerBound, upperBound];
   }
 
   getReps() {
@@ -62,7 +48,7 @@ class Exercise {
   }
 
   update(degree, seconds) {
-    const { previous, mode, state } = this;
+    const { previous, mode } = this;
     this.duration = seconds;
 
     if (previous.length < 5) {
@@ -74,38 +60,7 @@ class Exercise {
       const avg = sum / previous.length || 0;
 
       this.previous = [];
-      this.findState(avg, state);
-      // this.calculateMode(avg, mode);
-    }
-  }
-
-  findState(avg, state) {
-    const distancesFromBounds = this.bounds.map(bound =>
-      Math.sqrt(Math.pow(avg - bound, 2))
-    );
-    const minDistance = Math.min(...distancesFromBounds);
-    const posIndex = distancesFromBounds.indexOf(minDistance);
-
-    // Add state as a progress spinner
-    // document.getElementById("power").innerHTML = this.state;
-
-    if (minDistance > MIN_DIST) {
-      // The avg is not near a bound, keep going
-      return;
-    }
-
-    // Here the avg is near a bound
-    if (state === STATE.IDLE && posIndex === 0) {
-      this.state = STATE.START_POINT;
-    } else if (state === STATE.START_POINT && posIndex === 1) {
-      this.state = STATE.MIDDLE_POINT;
-    } else if (state === STATE.MIDDLE_POINT && posIndex === 0) {
-      // One rep is completed
-      this.state = STATE.IDLE;
-      this.increaseReps();
-    } else {
-      //Keep going
-      console.log("Possible never here, because of initial if");
+      this.calculateMode(avg, mode);
     }
   }
 
@@ -116,9 +71,9 @@ class Exercise {
 
   increaseReps() {
     this.reps = this.reps + 1;
-    this.power = ((this.caloriesPerRep * this.reps) / this.duration).toFixed(2);
-    this.energy = (this.energyPerRep * this.reps).toFixed();
-    this.calories = (this.caloriesPerRep * this.reps).toFixed(2);
+    this.power = ((caloriesPerRep * this.reps) / this.duration).toFixed(2);
+    this.energy = (energyPerRep * this.reps).toFixed();
+    this.calories = (caloriesPerRep * this.reps).toFixed(2);
 
     document.getElementById("power").innerHTML = this.power;
     document.getElementById("calories").innerHTML = this.calories;

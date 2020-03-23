@@ -14,6 +14,10 @@ class WorkoutTimer {
     return d.toLocaleString("en-GB").split(" ")[1];
   }
 
+  getSeconds() {
+    return this.clock / 1000;
+  }
+
   start() {
     this.offset = Date.now();
     this.intervalId = setInterval(() => {

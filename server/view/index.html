@@ -142,9 +142,48 @@
       svg {
         margin-right: 8px;
       }
+      .setup-page {
+        z-index: 10000001;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: calc(100vw - 32px);
+        height: calc(100vh - 32px);
+        background-color: #fff;
+        padding: 16px;
+
+        color: #212121;
+        font-size: 16px;
+        display: flex;
+        flex-direction: column;
+      }
+      .active {
+        color: #2705ad !important;
+        border: 2px solid #2705ad !important;
+      }
+      .unselected {
+        text-align: center;
+        width: calc(100% - 16px);
+        cursor: pointer;
+        background: white;
+        color: #2705ad55;
+        border: 2px solid #2705ad55;
+        margin-bottom: 16px;
+        padding: 8px;
+        border-radius: 16px;
+        width: 160px;
+      }
+      input {
+        padding: 16px 8px;
+        background-color: #2705ad11;
+        color: #2705ad;
+        border-radius: 4px;
+        width: 64px;
+      }
     </style>
 
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 
     <script src="src/libs/three.js"></script>
     <script src="src/libs/sea3d.js"></script>
@@ -157,19 +196,6 @@
 
     <script src="src/controls/OrbitControls.js"></script>
     <script src="src/controls/TransformControls.js"></script>
-    <!--
-<script src="src/shaders/BleachBypassShader.js"></script>
-<script src="src/shaders/ConvolutionShader.js"></script>
-<script src="src/shaders/CopyShader.js"></script>
-
-<script src="src/postprocessing/EffectComposer.js"></script>
-<script src="src/postprocessing/SSAARenderPass.js"></script>
-<script src="src/postprocessing/RenderPass.js"></script>
-<script src="src/postprocessing/BloomPass.js"></script>
-<script src="src/postprocessing/TexturePass.js"></script>
-<script src="src/postprocessing/ShaderPass.js"></script>
-<script src="src/postprocessing/MaskPass.js"></script>
--->
 
     <script src="src/loaders/BVHLoader.js"></script>
     <script src="src/loaders/BVHLoaderAdd.js"></script>
@@ -186,6 +212,7 @@
     <script src="samplesAroundY.js"></script>
     <script src="src/thesis/exercise.js"></script>
     <script src="src/thesis/workoutTimer.js"></script>
+    <script src="src/thesis/loadMovement.js"></script>
     <script src="src/thesis/customEdits.new.js"></script>
     <script src="src/thesis/processingCalibration.js"></script>
   </head>
@@ -212,8 +239,68 @@
       <p class="label" style="margin-bottom: 2rem;">
         It's easy! Follow the movement of the avatar's hand
       </p>
+
       <button class="cta-button" id="calib-button">Calibrate exercise</button>
     </div>
+
+    <!-- SET PERSONAL INFO -->
+    <div id="vue-select-exercise" class="setup-page">
+      <h1 style="margin-bottom: 1rem">Welcome</h1>
+      <p style="margin-bottom: 2rem">
+        Fill in your personal information and select your exercise:
+      </p>
+      <div class="row" style="align-items: center; margin-bottom: 1rem">
+        <label for="fweight" style="margin-right: 1rem">Weight:</label>
+        <input
+          v-model="weight"
+          type="number"
+          min="40"
+          max="200"
+          style="margin-right: 1rem"
+        />
+        kg
+      </div>
+      <div class="row" style="align-items: center; margin-bottom: 1rem">
+        <label for="fheight" style="margin-right: 1rem">Height:</label>
+        <input
+          v-model="height"
+          type="number"
+          min="100"
+          max="250"
+          style="margin-right: 1rem"
+        />
+        cm
+      </div>
+      <div class="row" style="align-items: flex-start; margin-bottom: 2rem">
+        <p style="margin-right: 1rem">Exercise:</p>
+        <ol>
+          <exercise-option
+            class="unselected"
+            v-for="exercise in exerciseList"
+            v-bind:exercise="exercise"
+            v-bind:class="{'active': exercise.id === exerciseId}"
+            @click.native="setExerciseId(exercise.id)"
+          ></exercise-option>
+        </ol>
+      </div>
+      <button id="save-info-button" class="cta-button" @click="saveInfo">
+        Save Info
+      </button>
+    </div>
+
+    <div
+      style="z-index: 100000000000000; color: red; position: absolute; top: 0;left: 0; display: none;"
+      id="debug-sign"
+    >
+      Debug ON
+    </div>
+
+    <!-- <div
+      style="z-index: 100000000000000; color: white; position: absolute; top: 0;left: 0"
+      id="log"
+    >
+      hey
+    </div> -->
 
     <div class="upper-card" id="upper-card">
       <div class="row">
@@ -327,23 +414,24 @@
           <div id="calories" class="value">
             0
           </div>
-          <span class="unit">cal</span>
+          <span class="unit">kcal</span>
         </div>
         <div class="centered-column">
-          <p class="label">Speed</p>
-          <div id="speed" class="value">
+          <p class="label">Energy</p>
+          <div id="energy" class="value">
             0
           </div>
-          <span class="unit">m/s</span>
+          <span class="unit">Joule</span>
         </div>
         <div class="centered-column">
           <p class="label">Power</p>
           <div id="power" class="value">
             0
           </div>
-          <span class="unit">watt</span>
+          <span class="unit">Watt</span>
         </div>
       </div>
+
       <button id="cta-button" class="cta-button">
         Start Now!
       </button>
@@ -353,5 +441,6 @@
       var container = document.getElementById("container");
       main.init(container);
     </script>
+    <script src="src/thesis/app.js"></script>
   </body>
 </html>

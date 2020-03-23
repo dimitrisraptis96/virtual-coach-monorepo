@@ -1,12 +1,26 @@
-var IMUquaternion = new THREE.Quaternion();
-var rotationAxis = new THREE.Vector3(0, 1, 0);
-const exercise = new Exercise();
+var exercise = null;
 const timer = new WorkoutTimer();
 
 const DEBUG_MODE = false;
 const CALIBRATION_STEPS = 100;
 const CALIBRATION_DELAY = 30;
 const IS_SAVE_ENABLED = false;
+
+const BICEP_CURL = "0";
+const LATERAL_EXTENSION = "1";
+const ADDUCTOR_EXTENTION = "2";
+const LEG_EXTENTION = "3";
+
+var exerciseId = 0;
+var weight = 1;
+var height = 1;
+
+var bodyPart,
+  calibAxis,
+  calculateThetaSteps,
+  preCalibration,
+  minTheta,
+  rangeTheta;
 
 var isWorkingOut = false;
 
@@ -32,18 +46,21 @@ function updateQuaternion(x, y, z, w) {
 }
 
 function calibration() {
+  preCalibration();
+
   for (let i = 0; i < CALIBRATION_STEPS; i++) {
     const delay = i * CALIBRATION_DELAY; //milliseconds
-    const theta = 0.9 * Math.PI * (i / CALIBRATION_STEPS);
+    const theta = calculateThetaSteps(i);
 
     setTimeout(() => {
-      const forearm = main.model.b["lForeArm"];
-      const axis = new THREE.Vector3(0, 1, 0);
+      const forearm = main.model.b[bodyPart];
+      const axis = calibAxis;
       const quaternion = new THREE.Quaternion();
+
       quaternion.setFromAxisAngle(axis, theta);
       forearm.setRotationFromQuaternion(quaternion);
 
-      THREE.SEA3D.AnimationHandler.update(0);
+      // THREE.SEA3D.AnimationHandler.update(0);
     }, delay);
 
     if (i === CALIBRATION_STEPS - 1) {
@@ -117,15 +134,16 @@ function radToDegrees(angle) {
 
 function predict(x, y, z, w) {
   const sample = { x, y, z, w };
-  console.log(sample);
 
-  const theta = predictPosition(sample);
+  const fraction = predictPosition(sample);
+
+  const theta = minTheta + rangeTheta * fraction;
 
   // console.log("Predicted theta: " + theta);
 
   // Update avatar
-  const forearm = main.model.b["lForeArm"];
-  const axis = new THREE.Vector3(0, 1, 0);
+  const forearm = main.model.b[bodyPart];
+  const axis = calibAxis;
   const quaternion = new THREE.Quaternion();
   quaternion.setFromAxisAngle(axis, theta);
   forearm.setRotationFromQuaternion(quaternion);
@@ -136,7 +154,7 @@ function predict(x, y, z, w) {
   //   exercise.start();
   // }
   //   const degrees = Math.round(theta * (180 / Math.PI));
-  exercise.update(radToDegrees(theta));
+  exercise.update(theta, timer.getSeconds());
 }
 
 function pauseExercise() {
@@ -163,25 +181,63 @@ function resumeExercise() {
 
 function initSession() {
   if (main.model) {
-    const forearm = main.model.b["lForeArm"];
+    const forearm = main.model.b[bodyPart];
     // const debugHandAxes = new THREE.AxesHelper(20);
     // forearm.add(debugHandAxes);
 
-    const axis = new THREE.Vector3(0, 1, 0);
+    const axis = calibAxis;
     const quaternion = new THREE.Quaternion();
     quaternion.setFromAxisAngle(axis, 0);
     forearm.setRotationFromQuaternion(quaternion);
-
     THREE.SEA3D.AnimationHandler.update(0);
 
     // calibration();
-    intro();
   } else {
     //not ready
   }
 }
 
+function setupExercise() {
+  const {
+    name,
+    partId,
+    weightFraction,
+    axis,
+    calcTheta,
+    prepare,
+    min,
+    max
+  } = loadMovement(exerciseId);
+
+  bodyPart = partId;
+  calibAxis = axis;
+  calculateThetaSteps = calcTheta;
+  preCalibration = prepare;
+
+  minTheta = min;
+  rangeTheta = Math.abs(max - min);
+
+  const lowerBound = min + Math.round(0.2 * rangeTheta);
+  const upperBound = min + Math.round(0.8 * rangeTheta);
+
+  exercise = new Exercise(
+    weight * weightFraction,
+    height / 100,
+    lowerBound,
+    upperBound
+  );
+}
+
 function intro() {
+  if (DEBUG_MODE) {
+    document.getElementById("debug-sign").style.display = "block";
+  }
+  THREE.SEA3D.AnimationHandler.update(0);
+
+  setupExercise();
+  const infoDialog = document.getElementById("vue-select-exercise");
+  infoDialog.style.display = "none";
+
   const popup = document.getElementById("intro");
 
   if (popup !== undefined) {

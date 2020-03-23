@@ -53,4 +53,6 @@ Targets of coach
 
 Inspo: https://www.thisisbeast.com/en
 
+https://www.performancemenu.com/article/43/Work-Power-Calculator/
+
 Enjoy your workout 🏃
