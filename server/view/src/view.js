@@ -362,7 +362,7 @@ var view = (function() {
 
       scene = new THREE.Scene();
 
-      camera = new THREE.PerspectiveCamera(50, vs.w / vs.h, 1, 2000);
+      camera = new THREE.PerspectiveCamera(65, vs.w / vs.h, 1, 2000);
       camera.position.set(0, 50, 400);
       controler = new THREE.OrbitControls(camera, renderer.domElement);
       controler.target.set(0, 40, 0);

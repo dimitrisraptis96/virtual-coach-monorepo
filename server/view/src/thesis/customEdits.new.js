@@ -228,7 +228,12 @@ function setupExercise() {
   );
 }
 
+function setSceneColor(hexColor = 0x581845) {
+  view.getScene().background = new THREE.Color(hexColor);
+}
+
 function intro() {
+  setSceneColor();
   if (DEBUG_MODE) {
     document.getElementById("debug-sign").style.display = "block";
   }

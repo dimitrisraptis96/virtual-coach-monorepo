@@ -2,9 +2,9 @@
   "name": "mto",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts":{
+  "scripts": {
     "build": "cd _compile && python build.py --include avatar --output ../build/avatar.js && python build.py --include avatar --minify --output ../build/avatar.min.js"
   },
-  "author": "lth <3dflashlo@gmail.com>",
+  "author": "dmraptis <dimitrisraptis96@gmail.com>",
   "license": "MIT"
 }
