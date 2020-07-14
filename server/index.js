@@ -16,7 +16,7 @@ if (process.env.NODE_ENV !== "production") {
 var app = express();
 app.use(express.static(__dirname + "/view"));
 app.use(bodyParser.text({ type: "application/json", limit: "50mb" }));
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
@@ -30,8 +30,12 @@ app.use(function(req, res, next) {
 // ========================================
 // 📱 ANDROID APP VIEW
 // ========================================
-app.get("/index.html", function(req, res, next) {
+app.get("/index.html", function (req, res, next) {
   res.sendFile(__dirname + "/index.html");
+});
+
+app.get("/dashboard", function (req, res, next) {
+  res.sendFile(__dirname + "/view/index_dash.html");
 });
 
 // ========================================
@@ -54,7 +58,7 @@ app.put("/calibration", async (req, res) => {
 
     const calibration = new models.Calibration({
       start,
-      end
+      end,
     });
 
     await calibration.save();
@@ -80,9 +84,7 @@ app.get("/users", async (req, res) => {
 
 app.get("/user/:userId", async (req, res) => {
   const id = mongoose.Types.ObjectId(req.params.userId.trim());
-  const user = await models.User.findById(id)
-    .populate("exercises")
-    .exec();
+  const user = await models.User.findById(id).populate("exercises").exec();
 
   return res.send(user);
 });
@@ -93,7 +95,7 @@ app.post("/user", async (req, res) => {
     const { name } = body;
 
     const user = new models.User({
-      name
+      name,
     });
 
     await user.save();
@@ -117,10 +119,10 @@ app.get("/exercises", async (req, res) => {
     ).populate("user");
 
     res.send(
-      exercises.map(exercise => ({
+      exercises.map((exercise) => ({
         name: exercise.name,
         id: exercise._id,
-        username: exercise.user ? exercise.user.name : "-"
+        username: exercise.user ? exercise.user.name : "-",
       }))
     );
   } catch (error) {
@@ -139,7 +141,7 @@ app.post("/exercise", async (req, res) => {
     if (!user) {
       console.log(`🚨 User named "${DEMO_USER}" not found.`);
       user = new models.User({
-        name: DEMO_USER
+        name: DEMO_USER,
       });
       await user.save();
       console.log(`🦸‍♂️ Just created a user with name "${DEMO_USER}"!`);
@@ -150,7 +152,7 @@ app.post("/exercise", async (req, res) => {
       samples: [],
       reps: Math.round(Math.random() * 10),
       calories: Math.round(Math.random() * 100),
-      user: user._id
+      user: user._id,
     });
 
     user.exercises.push(exercise._id);
@@ -171,7 +173,17 @@ app.put("/exercise", async (req, res) => {
   try {
     const body = JSON.parse(req.body);
 
-    const { samples, id, name } = body;
+    const {
+      samples,
+      id,
+      name,
+      metrics,
+      positions,
+      minTheta,
+      rangeTheta,
+      duration,
+      type,
+    } = body;
 
     const exerciseId = mongoose.Types.ObjectId(id);
 
@@ -182,19 +194,54 @@ app.put("/exercise", async (req, res) => {
     }
 
     if (samples) {
-      exercise.samples = [...exercise.samples, ...samples];
+      exercise.samples = samples;
+      exercise.duration = duration;
       console.log(
         "💪 Append " +
           samples.length +
-          " samples to the exercise http://localhost:3000/exercise/" +
+          " samples for " +
+          duration +
+          " secs to the exercise http://localhost:3000/exercise/" +
+          id
+      );
+    }
+    if (positions) {
+      exercise.positions = positions;
+      exercise.minTheta = minTheta;
+      exercise.rangeTheta = rangeTheta;
+      console.log(
+        "💪 Append " +
+          positions.length +
+          " fixed positions to the exercise http://localhost:3000/exercise/" +
+          id
+      );
+    }
+    if (metrics) {
+      exercise.metrics.calories = metrics.calories;
+      exercise.metrics.reps = metrics.reps;
+      exercise.metrics.power = metrics.power;
+      exercise.metrics.energy = metrics.energy;
+
+      console.log(
+        "💪 Append " +
+          metrics.calories +
+          " calories " +
+          metrics.power +
+          " power " +
+          metrics.energy +
+          " energy " +
+          metrics.reps +
+          " reps " +
+          " to the exercise http://localhost:3000/exercise/" +
           id
       );
     }
     if (name) {
       const oldName = exercise.name;
       exercise.name = name;
+      exercise.type = type;
       console.log(
-        `💪 Rename exercise from ${oldName} to ${name}. Link: http://localhost:3000/exercise/${id}`
+        `💪 Rename exercise from ${oldName} to ${name} with type ${type}. Link: http://localhost:3000/exercise/${id}`
       );
     }
 
@@ -220,7 +267,7 @@ app.delete("/exercise/:exerciseId", async (req, res) => {
         const user = await models.User.findById(userId).exec();
 
         console.log(user.exercises);
-        user.exercises = user.exercises.filter(id => id != exerciseId);
+        user.exercises = user.exercises.filter((id) => id != exerciseId);
         await user.save();
         console.log(user.exercises);
       } else {
@@ -237,11 +284,11 @@ app.delete("/exercise/:exerciseId", async (req, res) => {
 
 const createDemoUserWithΕxercise = async () => {
   const user = new models.User({
-    name: "Dimitris"
+    name: "Dimitris",
   });
 
   const user2 = new models.User({
-    name: "John"
+    name: "John",
   });
 
   const exercise = new models.Exercise({
@@ -249,7 +296,7 @@ const createDemoUserWithΕxercise = async () => {
     samples: data.samples,
     reps: 2,
     calories: 68,
-    user: user.id
+    user: user.id,
   });
 
   await user.save();
@@ -259,24 +306,24 @@ const createDemoUserWithΕxercise = async () => {
   return;
 };
 
-const findUser = async callback => {
-  const users = await models.User.find({}, function(err, docs) {
+const findUser = async (callback) => {
+  const users = await models.User.find({}, function (err, docs) {
     if (docs.length == 0) {
       console.log("No record found");
       return callback([]);
     }
-    return callback(docs.map(doc => doc._id));
+    return callback(docs.map((doc) => doc._id));
   });
   return users;
 };
 
-const findExercise = async callback => {
-  models.Exercise.find({}, function(err, docs) {
+const findExercise = async (callback) => {
+  models.Exercise.find({}, function (err, docs) {
     if (docs.length == 0) {
       console.log("No record found");
       return callback([]);
     }
-    return callback(docs.map(doc => doc._id));
+    return callback(docs.map((doc) => doc._id));
   });
 };
 
@@ -290,7 +337,7 @@ connectDb().then(async () => {
   if (ERASE_DATABSE_ON_SYNC) {
     await Promise.all([
       models.User.deleteMany({}),
-      models.Exercise.deleteMany({})
+      models.Exercise.deleteMany({}),
     ]);
   }
 
@@ -299,7 +346,7 @@ connectDb().then(async () => {
   // ]);
   // await createDemoUserWithΕxercise();
 
-  const logger = d => console.log(d);
+  const logger = (d) => console.log(d);
   // findUser(logger);
   // findExercise(logger);
 

@@ -5,7 +5,7 @@ const setupVue = () => {
         <div>
             {{ exercise.name }}
         </div>
-    `
+    `,
   });
 
   var app = new Vue({
@@ -18,24 +18,24 @@ const setupVue = () => {
         {
           id: BICEP_CURL,
           name: "Bicep Curls",
-          icon: `<svg><rectangle width="10" height="10" fill="red"/></svg>`
+          icon: `<svg><rectangle width="10" height="10" fill="red"/></svg>`,
         },
         {
           id: LATERAL_EXTENSION,
           name: "Lateral Extensions",
-          icon: `<svg><rectangle width="10" height="10" fill="blue"/></svg>`
+          icon: `<svg><rectangle width="10" height="10" fill="blue"/></svg>`,
         },
         {
           id: ADDUCTOR_EXTENTION,
           name: "Adductor Extensions",
-          icon: `<svg><rectangle width="10" height="10" fill="green"/></svg>`
+          icon: `<svg><rectangle width="10" height="10" fill="green"/></svg>`,
         },
         {
           id: LEG_EXTENTION,
           name: "Leg Extensions",
-          icon: `<svg><rectangle width="10" height="10" fill="green"/></svg>`
-        }
-      ]
+          icon: `<svg><rectangle width="10" height="10" fill="green"/></svg>`,
+        },
+      ],
     },
     methods: {
       setExerciseId(id) {
@@ -48,8 +48,8 @@ const setupVue = () => {
         exerciseId = this.exerciseId;
 
         intro();
-      }
-    }
+      },
+    },
   });
 };
 

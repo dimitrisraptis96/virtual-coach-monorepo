@@ -2,12 +2,12 @@ var geometry = new THREE.BoxBufferGeometry(1, 1, 1);
 var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 var mesh = new THREE.Mesh(geometry, material);
 
-var Model = function(type, meshs, morph) {
+var Model = function (type, meshs, morph) {
   if (morph === undefined) morph = false;
 
   this.geoms = {
     man: meshs.man.geometry.clone(),
-    woman: meshs.woman.geometry.clone()
+    woman: meshs.woman.geometry.clone(),
   };
 
   this.settings = {
@@ -21,7 +21,7 @@ var Model = function(type, meshs, morph) {
     lightmap: 0.6,
     shininess: 60,
     opacity: 1,
-    reflectivity: 0.1
+    reflectivity: 0.1,
   };
 
   this.colorBonesName = {
@@ -81,7 +81,7 @@ var Model = function(type, meshs, morph) {
     "0x7d7d83": "lfinger42",
     "0x007cff": "rfinger40",
     "0xff7e01": "rfinger41",
-    "0xff7d01": "rfinger42"
+    "0xff7d01": "rfinger42",
   };
 
   this.ref = meshs;
@@ -243,7 +243,7 @@ var Model = function(type, meshs, morph) {
 };
 
 Model.prototype = {
-  removeTo: function(Scene) {
+  removeTo: function (Scene) {
     this.removeSkeleton();
 
     Scene.remove(this.mesh);
@@ -252,14 +252,14 @@ Model.prototype = {
     this.isFull = false;
   },
 
-  addTo: function(Scene) {
+  addTo: function (Scene) {
     if (this.isSkeleton) this.addSkeleton();
 
     Scene.add(this.mesh);
     Scene.add(this.root);
 
-    var axesHelper = new THREE.AxesHelper(5);
-    Scene.add(axesHelper);
+    // var axesHelper = new THREE.AxesHelper(20);
+    // Scene.add(axesHelper);
 
     // Scene.add(mesh);
 
@@ -270,7 +270,7 @@ Model.prototype = {
   // HELPER
   // --------------------------
 
-  addHelper: function(b) {
+  addHelper: function (b) {
     this.center = new THREE.Mesh(
       new THREE.CircleGeometry(25),
       new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true })
@@ -285,13 +285,13 @@ Model.prototype = {
   // SKELETON BOX
   // --------------------------
 
-  showSkeleton: function(b) {
+  showSkeleton: function (b) {
     if (b) this.addSkeleton();
     else this.removeSkeleton();
     //this.isSkeleton = b;
   },
 
-  removeSkeleton: function() {
+  removeSkeleton: function () {
     if (this.skell === null) return;
 
     var i = this.skell.children.length;
@@ -300,7 +300,7 @@ Model.prototype = {
     this.skell = null;
   },
 
-  addSkeleton: function() {
+  addSkeleton: function () {
     if (this.skell !== null) return;
 
     var ignor = [
@@ -316,7 +316,7 @@ Model.prototype = {
       "lfinger40",
       "lfinger30",
       "lfinger00",
-      "lfinger10"
+      "lfinger10",
     ];
 
     this.skell = new THREE.Group();
@@ -330,7 +330,7 @@ Model.prototype = {
       color: 0xffffff,
       wireframe: true,
       depthTest: true,
-      depthWrite: true
+      depthWrite: true,
     });
 
     this.meshBones = [];
@@ -411,6 +411,9 @@ Model.prototype = {
             mesh.scale.z = 2;
           }
 
+          var helper = new THREE.SkeletonHelper(mesh);
+          Scene.add(helper);
+
           this.skell.add(mesh);
           bone.userData.mesh = mesh;
         }
@@ -422,7 +425,7 @@ Model.prototype = {
   // ANIMATION
   // --------------------------
 
-  update: function(delta) {
+  update: function (delta) {
     // THREE.SEA3D.AnimationHandler.update(delta);
 
     this.getAnimInfo();
@@ -443,7 +446,7 @@ Model.prototype = {
     // if (gui) gui.updateTimeBarre(this);
   },
 
-  reset: function() {
+  reset: function () {
     this.mesh.stopAll();
 
     var i,
@@ -457,43 +460,43 @@ Model.prototype = {
     }
   },
 
-  setTimescale: function(v) {
+  setTimescale: function (v) {
     this.mesh.setTimeScale(v);
   },
 
-  stop: function() {
+  stop: function () {
     this.mesh.stopAll();
     this.isPlay = false;
   },
 
-  play: function(name, crossfade, offset, weight) {
+  play: function (name, crossfade, offset, weight) {
     this.unPause();
     this.mesh.play(name, crossfade, offset, weight);
   },
 
-  playOne: function(f) {
+  playOne: function (f) {
     var offset = f * this.frameTime;
     this.mesh.play(this.currentPlay, 0, offset, 1);
     this.pause();
   },
 
-  pause: function() {
+  pause: function () {
     this.mesh.pauseAll();
     this.isPlay = false;
   },
 
-  unPause: function() {
+  unPause: function () {
     this.mesh.unPauseAll();
     this.isPlay = true;
   },
 
-  getTime: function() {
+  getTime: function () {
     return this.mesh.currentAnimationAction
       ? this.mesh.currentAnimationAction.time
       : false;
   },
 
-  breathing: function() {
+  breathing: function () {
     if (this.b.chest && this.b.abdomen) {
       if (this.breathSide > 0) {
         this.b.chest.scalling.z = Math.lerp(1, 1.04, this.breath * 0.05);
@@ -514,7 +517,7 @@ Model.prototype = {
     }
   },
 
-  look: function() {
+  look: function () {
     var v = view.getMouse();
 
     if (this.isPlay) {
@@ -547,7 +550,7 @@ Model.prototype = {
     //a.setRotationFromMatrix( m );
   },
 
-  getAnimInfo: function() {
+  getAnimInfo: function () {
     var anim = this.mesh.currentAnimation;
     //var anim = this.mesh.currentAnimationAction;
 
@@ -564,15 +567,15 @@ Model.prototype = {
     }
   },
 
-  getHipPos: function() {
+  getHipPos: function () {
     return this.b.hip.getWorldPosition();
   },
 
-  setPosition: function(pos) {
+  setPosition: function (pos) {
     this.mesh.position.copy(this.position);
   },
 
-  setDebug: function(b) {
+  setDebug: function (b) {
     this.debug = b;
     this.addHelper(this.debug);
 
@@ -584,7 +587,7 @@ Model.prototype = {
   // MATERIAL
   // --------------------------
 
-  swapMaterial: function(b) {
+  swapMaterial: function (b) {
     if (b) {
       this.mesh.material = this.mats[2];
       this.mats[1].visible = false;
@@ -594,18 +597,18 @@ Model.prototype = {
     }
   },
 
-  updateMaterial: function() {
+  updateMaterial: function () {
     this.mats[0].needsUpdate = true;
     this.mats[1].needsUpdate = true;
     this.mats[2].needsUpdate = true;
   },
 
-  setEnvmap: function() {
+  setEnvmap: function () {
     this.mats[0].envMap = view.getEnvmap();
     this.mats[1].envMap = view.getEnvmap();
   },
 
-  setMaterial: function(name) {
+  setMaterial: function (name) {
     var set = this.settings,
       m,
       i;
@@ -620,7 +623,7 @@ Model.prototype = {
     this.mats = [
       new THREE[mtype](),
       new THREE[mtype](),
-      new THREE.MeshBasicMaterial()
+      new THREE.MeshBasicMaterial(),
     ];
 
     // skin material
@@ -671,7 +674,7 @@ Model.prototype = {
     if (this.isMapReady) this.setTextures();
   },
 
-  setTextures: function(txt, debug) {
+  setTextures: function (txt, debug) {
     if (txt !== undefined) this.txt = txt;
 
     var m = this.mats[0];
@@ -705,7 +708,7 @@ Model.prototype = {
     this.isMapReady = true;
   },
 
-  updateSetting: function() {
+  updateSetting: function () {
     var set = this.settings;
     var m = this.mats[0];
 
@@ -726,23 +729,23 @@ Model.prototype = {
   // BONES
   // --------------------------
 
-  setScale: function(axe, v) {
+  setScale: function (axe, v) {
     if (this.boneSelect === null) return;
     this.boneSelect.scale[axe] = v;
   },
 
-  setScalling: function(axe, v) {
+  setScalling: function (axe, v) {
     if (this.boneSelect === null) return;
     this.boneSelect.scalling[axe] = v;
   },
 
-  hideBones: function() {
+  hideBones: function () {
     this.boneSelect = null;
     this.mats[0].vertexColors = THREE.NoColors;
     this.mats[0].needsUpdate = true;
   },
 
-  showBones: function(color) {
+  showBones: function (color) {
     var i,
       lng,
       n,
@@ -805,5 +808,5 @@ Model.prototype = {
     }
 
     this.geometry.attributes.color.needsUpdate = true;
-  }
+  },
 };

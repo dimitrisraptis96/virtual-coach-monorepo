@@ -8,13 +8,30 @@ const exerciseSchema = new mongoose.Schema({
       y: Number,
       z: Number,
       w: Number,
-      timestamp: String
-    }
+      timestamp: String,
+    },
   ],
-  reps: Number,
-  calories: Number,
+  metrics: {
+    reps: Number,
+    energy: Number,
+    calories: Number,
+    power: Number,
+  },
+  positions: [
+    {
+      x: Number,
+      y: Number,
+      z: Number,
+      w: Number,
+      timestamp: String,
+    },
+  ],
+  minTheta: Number,
+  rangeTheta: Number,
+  duration: Number,
+  type: String,
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  creationTime: { type: Date, default: Date.now }
+  creationTime: { type: Date, default: Date.now },
 });
 
 const Exercise = mongoose.model("Exercise", exerciseSchema);

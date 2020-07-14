@@ -4,12 +4,14 @@ const timer = new WorkoutTimer();
 const DEBUG_MODE = false;
 const CALIBRATION_STEPS = 100;
 const CALIBRATION_DELAY = 30;
-const IS_SAVE_ENABLED = false;
+const IS_SAVE_ENABLED = true;
 
 const BICEP_CURL = "0";
 const LATERAL_EXTENSION = "1";
 const ADDUCTOR_EXTENTION = "2";
 const LEG_EXTENTION = "3";
+
+var currentExerciseUUID = null;
 
 var exerciseId = 0;
 var weight = 1;
@@ -25,6 +27,7 @@ var bodyPart,
 var isWorkingOut = false;
 
 var calibrationSamples = DEBUG_MODE ? samples : [];
+var predictSamples = [];
 
 const STATES = {
   INTRO: 0,
@@ -32,10 +35,26 @@ const STATES = {
   PROCESSING: 2,
   PREDICTION: 3,
   FINISH: 4,
-  IDLE: 5
+  IDLE: 5,
 };
 
 var currentState = STATES.INTRO;
+
+function getExerciseName(id) {
+  switch (id) {
+    case BICEP_CURL:
+      return "Bicep Curl";
+    case LATERAL_EXTENSION:
+      return "Lateral Extension";
+    case ADDUCTOR_EXTENTION:
+      return "Adductor Extension";
+    case LEG_EXTENTION:
+      return "Leg Extension";
+    default:
+      return "Wrong Exercise";
+      break;
+  }
+}
 
 function updateQuaternion(x, y, z, w) {
   if (currentState === STATES.CALIBRATION) {
@@ -69,31 +88,64 @@ function calibration() {
   }
 }
 
-function saveData(samples) {
-  axios({
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    url: "/exercise"
-  })
-    .then(res => {
-      const id = res.data;
-
-      axios({
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        data: JSON.stringify({
-          samples: samples,
-          name: "calib",
-          id: id
-        }),
-        url: "/exercise"
-      }).catch(error => {
-        console.log(error);
-      });
-    })
-    .catch(error => {
+function saveData() {
+  if (currentExerciseUUID) {
+    axios({
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      data: JSON.stringify({
+        samples: predictSamples,
+        id: currentExerciseUUID,
+        type: exerciseId,
+        positions: exercisePositions,
+        name: getExerciseName(exerciseId),
+        duration: timer.getSeconds(),
+        minTheta: minTheta,
+        rangeTheta: rangeTheta,
+        metrics: {
+          reps: exercise.reps,
+          energy: exercise.energy,
+          calories: exercise.calories,
+          power: exercise.power,
+        },
+      }),
+      url: "/exercise",
+    }).catch((error) => {
       console.log(error);
     });
+  } else {
+    axios({
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      url: "/exercise",
+    })
+      .then((res) => {
+        currentExerciseUUID = res.data;
+
+        axios({
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          data: JSON.stringify({
+            samples: predictSamples,
+            name: getExerciseName(exerciseId),
+            id: currentExerciseUUID,
+            exercisePositions: exercisePositions,
+            metrics: {
+              reps: exercise.reps,
+              energy: exercise.energy,
+              calories: exercise.calories,
+              power: exercise.power,
+            },
+          }),
+          url: "/exercise",
+        }).catch((error) => {
+          console.log(error);
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 }
 
 function startProcessing() {
@@ -111,7 +163,7 @@ function startProcessing() {
   setTimeout(() => {
     document.getElementById("countdown").style.opacity = "0";
 
-    if (IS_SAVE_ENABLED) saveData(calibrationSamples);
+    // if (IS_SAVE_ENABLED) saveData(calibrationSamples);
 
     //TODO: Start exercise
     resumeExercise();
@@ -125,6 +177,7 @@ function startProcessing() {
 
 function finishExercise() {
   exercise.stop();
+  saveData();
   // TODO: here show the end screen
 }
 
@@ -138,6 +191,8 @@ function predict(x, y, z, w) {
   const fraction = predictPosition(sample);
 
   const theta = minTheta + rangeTheta * fraction;
+
+  predictSamples.push({ x, y, z, w, theta });
 
   // console.log("Predicted theta: " + theta);
 
@@ -166,6 +221,8 @@ function pauseExercise() {
   exercise.stop();
   timer.stop();
   isWorkingOut = !isWorkingOut;
+
+  saveData();
 }
 
 function resumeExercise() {
@@ -206,7 +263,7 @@ function setupExercise() {
     calcTheta,
     prepare,
     min,
-    max
+    max,
   } = loadMovement(exerciseId);
 
   bodyPart = partId;
@@ -228,12 +285,13 @@ function setupExercise() {
   );
 }
 
-function setSceneColor(hexColor = 0x581845) {
+function setSceneColor(hexColor = 0x2705ad) {
   view.getScene().background = new THREE.Color(hexColor);
 }
 
 function intro() {
-  setSceneColor();
+  setSceneColor(0x212121);
+  // setSceneColor(0xffffff);
   if (DEBUG_MODE) {
     document.getElementById("debug-sign").style.display = "block";
   }

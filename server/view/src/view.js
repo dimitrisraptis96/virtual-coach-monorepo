@@ -1,4 +1,4 @@
-var view = (function() {
+var view = (function () {
   "use strict";
 
   var renderer,
@@ -43,7 +43,7 @@ var view = (function() {
     // toneMapping
     exposure: 2.2,
     whitePoint: 2.2,
-    tone: "Uncharted2"
+    tone: "Uncharted2",
   };
 
   var toneMappings;
@@ -60,12 +60,12 @@ var view = (function() {
     isGrid: false,
     videoSize: [1920 / 3, 1080 / 3],
 
-    update: function(d) {
+    update: function (d) {
       //var delta = clock.getDelta();
       // if (main.model) main.model.update(d); //delta );
     },
 
-    render: function(time) {
+    render: function (time) {
       requestAnimationFrame(view.render);
 
       TWEEN.update();
@@ -93,7 +93,7 @@ var view = (function() {
       }
     },
 
-    resize: function(e, w, h) {
+    resize: function (e, w, h) {
       vs.w = window.innerWidth;
       vs.h = window.innerHeight;
 
@@ -111,14 +111,14 @@ var view = (function() {
       if (gui) gui.resize();
     },
 
-    setFramerate: function(n) {
+    setFramerate: function (n) {
       view.framerate = n;
       t.inter = 1000 / view.framerate;
     },
 
     // MOUSE EVENT
 
-    up: function(e) {
+    up: function (e) {
       e.preventDefault();
 
       isDown = false;
@@ -138,7 +138,7 @@ var view = (function() {
       //view.rayTest();
     },
 
-    down: function(e) {
+    down: function (e) {
       e.preventDefault();
       isDown = true;
       startPos = view.getCurrentPosition();
@@ -148,13 +148,13 @@ var view = (function() {
       //view.rayTest();
     },
 
-    move: function(e) {
+    move: function (e) {
       e.preventDefault();
       view.findMouse(e);
       //view.rayTest();
     },
 
-    findMouse: function(e) {
+    findMouse: function (e) {
       if (e.changedTouches) {
         mouseBase.x = e.changedTouches[0].pageX;
         mouseBase.y = e.changedTouches[0].pageY;
@@ -166,7 +166,7 @@ var view = (function() {
       mouse.set((mouseBase.x / vs.w) * 2 - 1, -(mouseBase.y / vs.h) * 2 + 1);
     },
 
-    rayTest: function() {
+    rayTest: function () {
       raycaster.setFromCamera(mouse, camera);
       var hits = raycaster.intersectObjects(content.children, true),
         name,
@@ -199,7 +199,7 @@ var view = (function() {
       }
     },
 
-    initPickScene: function() {
+    initPickScene: function () {
       //pickingScene = new THREE.Scene();
       pickingTexture = new THREE.WebGLRenderTarget(
         Math.floor(vs.w * 0.5),
@@ -208,7 +208,7 @@ var view = (function() {
       pickingTexture.texture.minFilter = THREE.LinearFilter;
     },
 
-    pick: function() {
+    pick: function () {
       if (mode !== "bones") return;
 
       if (pickingTexture === null) view.initPickScene();
@@ -239,43 +239,43 @@ var view = (function() {
 
     // SET
 
-    setMode: function(Mode) {
+    setMode: function (Mode) {
       if (mode === "bones" && mode !== Mode) main.model.hideBones();
       mode = Mode;
     },
 
     // GET
-    getMode: function() {
+    getMode: function () {
       return mode;
     },
-    getRenderer: function() {
+    getRenderer: function () {
       return renderer;
     },
-    getControler: function() {
+    getControler: function () {
       return controler;
     },
-    getCamera: function() {
+    getCamera: function () {
       return camera;
     },
-    getScene: function() {
+    getScene: function () {
       return scene;
     },
-    getContent: function() {
+    getContent: function () {
       return content;
     },
-    getMouse: function() {
+    getMouse: function () {
       return mouse;
     },
 
-    getDom: function() {
+    getDom: function () {
       return renderer.domElement;
     },
 
-    getSetting: function() {
+    getSetting: function () {
       return setting;
     },
 
-    getWebGL: function(force) {
+    getWebGL: function (force) {
       // WebGLExtensions
       //
 
@@ -293,7 +293,7 @@ var view = (function() {
         depth: true,
         precision: "highp",
         premultipliedAlpha: true,
-        preserveDrawingBuffer: false
+        preserveDrawingBuffer: false,
       };
 
       if (!force) {
@@ -326,7 +326,7 @@ var view = (function() {
       return options;
     },
 
-    init: function(container, forceGL1) {
+    init: function (container, forceGL1) {
       //console.log(THREE.WebGLShader)
 
       mouse = new THREE.Vector2();
@@ -339,7 +339,7 @@ var view = (function() {
         Linear: THREE.LinearToneMapping,
         Reinhard: THREE.ReinhardToneMapping,
         Uncharted2: THREE.Uncharted2ToneMapping,
-        Cineon: THREE.CineonToneMapping
+        Cineon: THREE.CineonToneMapping,
       };
 
       //clock = new THREE.Clock();
@@ -407,7 +407,7 @@ var view = (function() {
       this.autoRotate({ distance: 100, polar: 75, azim: 15 });
     },
 
-    setPixelRatio: function(b) {
+    setPixelRatio: function (b) {
       if (b) {
         view.pixelRatio = 0.5;
       } else {
@@ -419,7 +419,7 @@ var view = (function() {
 
     // GRID
 
-    addGrid: function(b) {
+    addGrid: function (b) {
       if (b) {
         if (view.isGrid) return;
 
@@ -429,7 +429,7 @@ var view = (function() {
           transparent: true,
           opacity: 0.25,
           depthTest: true,
-          depthWrite: false
+          depthWrite: false,
         });
 
         scene.add(grid);
@@ -446,13 +446,13 @@ var view = (function() {
 
     // TONE
 
-    disableTone: function(v) {
+    disableTone: function (v) {
       renderer.gammaInput = false;
       renderer.gammaOutput = false;
       renderer.toneMapping = THREE.NoToneMapping;
     },
 
-    setTone: function(v) {
+    setTone: function (v) {
       var tonesTypes = ["None", "Linear", "Reinhard", "Uncharted2", "Cineon"];
 
       renderer.gammaInput = setting.gammaInput;
@@ -474,7 +474,7 @@ var view = (function() {
 
     // LIGHT
 
-    addLight: function() {
+    addLight: function () {
       //ambient = new THREE.AmbientLight( 0x333333 );
       //scene.add( ambient );
 
@@ -501,7 +501,7 @@ var view = (function() {
 
     // SHADOW
 
-    addShadow: function(b) {
+    addShadow: function (b) {
       if (b) {
         if (view.isShadow) return;
 
@@ -518,7 +518,7 @@ var view = (function() {
           new THREE.ShadowMaterial({
             opacity: 0.3,
             depthTest: true,
-            depthWrite: false
+            depthWrite: false,
           })
         );
         plane.geometry.applyMatrix(
@@ -551,11 +551,11 @@ var view = (function() {
 
     // CAPTURE
 
-    getCaptueMode: function() {
+    getCaptueMode: function () {
       return isCaptureMode;
     },
 
-    captureMode: function(b) {
+    captureMode: function (b) {
       isCaptureMode = b;
 
       if (isCaptureMode) {
@@ -580,7 +580,7 @@ var view = (function() {
       }
     },
 
-    setVideoSize: function(v) {
+    setVideoSize: function (v) {
       if (!isCaptureMode) return;
 
       if (v !== undefined) view.videoSize = v;
@@ -591,7 +591,7 @@ var view = (function() {
       view.resize(null, w, h);
     },
 
-    initCapture: function() {
+    initCapture: function () {
       if (capturer !== null) return;
 
       capturer = new CCapture({
@@ -605,7 +605,7 @@ var view = (function() {
         currentTime: 0,
         timeLimit: 4,
         frameLimit: 0,
-        autoSaveTime: 0
+        autoSaveTime: 0,
         //autoSaveTime:10,
         //workersPath:'./js/',
         //timeLimit: 60,//second
@@ -617,7 +617,7 @@ var view = (function() {
       console.log(capturer);
     },
 
-    startCapture: function() {
+    startCapture: function () {
       if (!isCaptureMode) return;
       if (isCapture) return;
 
@@ -626,7 +626,7 @@ var view = (function() {
       isCapture = true;
     },
 
-    saveCapture: function() {
+    saveCapture: function () {
       if (!isCaptureMode) return;
       if (!isCapture) return;
 
@@ -640,7 +640,7 @@ var view = (function() {
 
     // MOBILE SUPPORT
 
-    testMobile: function() {
+    testMobile: function () {
       var n = navigator.userAgent;
       if (
         n.match(/Android/i) ||
@@ -657,12 +657,12 @@ var view = (function() {
 
     // MODEL ADD
 
-    extendGeometry: function(geometry) {
+    extendGeometry: function (geometry) {
       view.reversUV(geometry);
       view.addVertexColor(geometry);
     },
 
-    reversUV: function(geometry) {
+    reversUV: function (geometry) {
       // correct inversion of normal map in symetrics mesh
 
       var uv = geometry.attributes.uv.array;
@@ -674,7 +674,7 @@ var view = (function() {
       view.addUV2(geometry);
     },
 
-    addVertexColor: function(geometry) {
+    addVertexColor: function (geometry) {
       var color = new THREE.Float32BufferAttribute(
         geometry.attributes.position.count * 3,
         3
@@ -693,11 +693,11 @@ var view = (function() {
       geometry.attributes.color.needsUpdate = true;
     },
 
-    addUV2: function(geometry) {
+    addUV2: function (geometry) {
       geometry.addAttribute("uv2", geometry.attributes.uv);
     },
 
-    correctMorph: function(morphs, name, meshs) {
+    correctMorph: function (morphs, name, meshs) {
       for (var i = 0; i < morphs.length; i++) {
         view.extendGeometry(meshs[name + "_" + morphs[i]].geometry);
         meshs[name].geometry.morphAttributes.position[i].array =
@@ -709,8 +709,8 @@ var view = (function() {
 
     // CAMERA AUTO CONTROL
 
-    autoRotate: function(o, time, delay, callback) {
-      callback = callback || function() {};
+    autoRotate: function (o, time, delay, callback) {
+      callback = callback || function () {};
 
       var c = view.getCurrentPosition();
       controler.enabled = false;
@@ -719,17 +719,17 @@ var view = (function() {
         .to(o, time || 2000)
         .delay(delay || 0)
         .easing(TWEEN.Easing.Quadratic.Out)
-        .onUpdate(function() {
+        .onUpdate(function () {
           view.orbit(c);
         })
-        .onComplete(function() {
+        .onComplete(function () {
           controler.enabled = true;
           callback();
         })
         .start();
     },
 
-    orbit: function(o) {
+    orbit: function (o) {
       var phi = o.polar * Math.torad;
       var theta = o.azim * Math.torad;
 
@@ -741,7 +741,7 @@ var view = (function() {
       controler.update();
     },
 
-    getCurrentPosition: function(log) {
+    getCurrentPosition: function (log) {
       var p = {};
       var t = controler.target;
       var c = camera.position;
@@ -755,7 +755,7 @@ var view = (function() {
       return p;
     },
 
-    initCanvasId: function(img) {
+    initCanvasId: function (img) {
       var canvas = document.createElement("canvas");
       canvas.width = canvas.height = 512;
       var ctx = canvas.getContext("2d");
@@ -765,7 +765,7 @@ var view = (function() {
       pixelsLength = pixels.length * 0.25;
     },
 
-    getPixelValue: function(v) {
+    getPixelValue: function (v) {
       var cc = [0, 0, 0, 0];
       var color = 0x000000;
 
@@ -791,21 +791,21 @@ var view = (function() {
 
     // ENVMAP
 
-    getEnvmap: function() {
+    getEnvmap: function () {
       return envmap;
     },
 
-    initSphereEnvmap: function(map) {
+    initSphereEnvmap: function (map) {
       envmap = new THREE.Texture(map);
       envmap.mapping = THREE.SphericalReflectionMapping;
       envmap.needsUpdate = true;
     },
 
-    showSky: function(b) {
+    showSky: function (b) {
       sky.visible = b;
     },
 
-    initEnvScene: function(map) {
+    initEnvScene: function (map) {
       var s = 1;
       ballScene = new THREE.Scene();
       ballCamera = new THREE.CubeCamera(0.1, 10, 256);
@@ -841,7 +841,7 @@ var view = (function() {
       view.renderEnvmap();
     },
 
-    renderEnvmap: function() {
+    renderEnvmap: function () {
       view.disableTone();
 
       //
@@ -853,10 +853,10 @@ var view = (function() {
       view.setTone();
     },
 
-    clear: function(mesh) {
+    clear: function (mesh) {
       var i = mesh.children.length;
       while (i--) mesh.remove(mesh.children[i]);
-    }
+    },
   };
 
   return view;

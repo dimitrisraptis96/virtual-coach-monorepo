@@ -1,4 +1,4 @@
-var main = (function() {
+var main = (function () {
   "use strict";
 
   var modelName = "avatar_test"; //.tjs
@@ -31,7 +31,7 @@ var main = (function() {
     "eye_w.png",
     "eye_n.png",
     "eye_l.png",
-    "UV_Grid_Sm.jpg"
+    "UV_Grid_Sm.jpg",
   ];
 
   var scene, man, woman, bvhLoader;
@@ -48,7 +48,7 @@ var main = (function() {
     //   INIT
     // --------------------------
 
-    init: function(container, forceGL1) {
+    init: function (container, forceGL1) {
       view.init(container, forceGL1);
       // gui.init(container);
       //shader.init();
@@ -61,6 +61,18 @@ var main = (function() {
       main.loadModel();
 
       var dom = view.getDom(); //document.body;
+
+      console.log(scene);
+      console.log(view);
+
+      if (typeof __THREE_DEVTOOLS__ !== "undefined") {
+        __THREE_DEVTOOLS__.dispatchEvent(
+          new CustomEvent("observe", { detail: scene })
+        );
+        __THREE_DEVTOOLS__.dispatchEvent(
+          new CustomEvent("observe", { detail: view.getRenderer() })
+        );
+      }
 
       // dom.addEventListener(
       //   "dragover",
@@ -86,7 +98,7 @@ var main = (function() {
       // dom.addEventListener("drop", main.dropAnimation, false);
     },
 
-    dropAnimation: function(e) {
+    dropAnimation: function (e) {
       e.preventDefault();
 
       if (e.dataTransfer.items) {
@@ -101,7 +113,7 @@ var main = (function() {
       else if (type === "bvh" || type === "BVH") reader.readAsText(file);
       else return;
 
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         main.loadAnimation(e.target.result, fname, type);
       }.bind(this);
     },
@@ -110,14 +122,14 @@ var main = (function() {
     //   LOAD
     // --------------------------
 
-    loadModel: function() {
+    loadModel: function () {
       var asset = [],
         i = models.length;
       while (i--) asset[i] = path + models[i];
       pool.load(asset, main.onLoadModel);
     },
 
-    loadTextures: function() {
+    loadTextures: function () {
       var asset = [],
         i = textures.length;
       while (i--) asset[i] = path + "textures/" + textures[i];
@@ -128,7 +140,7 @@ var main = (function() {
     //   ON LOAD
     // --------------------------
 
-    onLoadModel: function(p) {
+    onLoadModel: function (p) {
       var meshs = pool.meshByName(modelName);
 
       view.extendGeometry(meshs.man.geometry);
@@ -161,7 +173,7 @@ var main = (function() {
       main.loadTextures();
     },
 
-    onLoadTextures: function(p) {
+    onLoadTextures: function (p) {
       var txt = {};
 
       var i = textures.length,
@@ -199,7 +211,7 @@ var main = (function() {
     //   CHOOSE MODEL
     // --------------------------
 
-    switchModel: function() {
+    switchModel: function () {
       var currentPlay = "";
       var matset = null;
 
@@ -228,7 +240,7 @@ var main = (function() {
     //   ANIMATION
     // --------------------------
 
-    loadAnimation: function(data, name, type) {
+    loadAnimation: function (data, name, type) {
       // lzma compress format
       if (type === "z" || type === "hex")
         data = SEA3D.File.LZMAUncompress(data);
@@ -238,11 +250,11 @@ var main = (function() {
       main.applyAnimation(name, bvhLoader.parseData(data));
     },
 
-    addAnimation: function(name, data) {
+    addAnimation: function (name, data) {
       main.applyAnimation(name, bvhLoader.parseData(data));
     },
 
-    applyAnimation: function(name, result) {
+    applyAnimation: function (name, result) {
       if (main.animations.indexOf(name) !== -1) return;
 
       //var leg = result.leg || 0;
@@ -275,7 +287,7 @@ var main = (function() {
           ["crouch_side_r", 710, 740],
           ["crouch_diag_r", 745, 775],
           ["crouch_side_l", 780, 810],
-          ["crouch_diag_l", 815, 845]
+          ["crouch_diag_l", 815, 845],
         ];
       }
 
@@ -300,13 +312,13 @@ var main = (function() {
       }
     },
 
-    setTimescale: function(v) {
+    setTimescale: function (v) {
       if (v !== undefined) main.timescale = v;
       man.setTimescale(main.timescale);
       woman.setTimescale(main.timescale);
     },
 
-    lockHip: function(b) {
+    lockHip: function (b) {
       man.isLockHip = b;
       woman.isLockHip = b;
     },
@@ -315,7 +327,7 @@ var main = (function() {
     //   TEXTURES
     // --------------------------
 
-    updateMaterial: function() {
+    updateMaterial: function () {
       man.updateMaterial();
       woman.updateMaterial();
     },
@@ -324,11 +336,11 @@ var main = (function() {
     //   SKELETON
     // --------------------------
 
-    showSkeleton: function(b) {
+    showSkeleton: function (b) {
       man.isSkeleton = b;
       woman.isSkeleton = b;
       main.model.showSkeleton(b);
-    }
+    },
   };
 
   return main;

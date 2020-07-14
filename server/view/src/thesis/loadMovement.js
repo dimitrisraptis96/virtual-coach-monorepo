@@ -22,41 +22,41 @@ const movements = [
   {
     name: "Bicep Curls",
     partId: "lForeArm",
-    weightFraction: 2.295,
+    weightFraction: 0.02295,
     min: 0,
     max: 0.9 * Math.PI,
     axis: new THREE.Vector3(0, 1, 0),
-    calcTheta: i => 0.9 * Math.PI * (i / CALIBRATION_STEPS),
-    prepare: () => {}
+    calcTheta: (i) => 0.9 * Math.PI * (i / CALIBRATION_STEPS),
+    prepare: () => {},
   },
   {
     name: "Lateral Extensions",
     partId: "lShldr",
-    weightFraction: 5.335,
+    weightFraction: 0.05335,
     min: -Math.PI / 3,
     max: 0,
     axis: new THREE.Vector3(0, 0, 1),
-    calcTheta: i => (Math.PI / 3) * (i / CALIBRATION_STEPS) - Math.PI / 3,
-    prepare: () => {}
+    calcTheta: (i) => (Math.PI / 3) * (i / CALIBRATION_STEPS) - Math.PI / 3,
+    prepare: () => {},
   },
   {
     name: "Adductor Extension",
     partId: "rThigh",
-    weightFraction: 17.555,
+    weightFraction: 0.17555,
     min: Math.PI,
     max: (4 * Math.PI) / 3,
     axis: new THREE.Vector3(0, 0, 1),
-    calcTheta: i => Math.PI + (Math.PI / 3) * (i / CALIBRATION_STEPS),
-    prepare: () => {}
+    calcTheta: (i) => Math.PI + (Math.PI / 3) * (i / CALIBRATION_STEPS),
+    prepare: () => {},
   },
   {
     name: "Leg Extension",
     partId: "rShin",
-    weightFraction: 6.43,
+    weightFraction: 0.0643,
     min: 0,
     max: Math.PI / 2,
     axis: new THREE.Vector3(0, 1, 0),
-    calcTheta: i => (Math.PI / 2) * (i / CALIBRATION_STEPS),
+    calcTheta: (i) => (Math.PI / 2) * (i / CALIBRATION_STEPS),
     prepare: () => {
       main.model.b["rThigh"].rotateOnAxis(
         new THREE.Vector3(0, 1, 0),
@@ -70,6 +70,6 @@ const movements = [
         new THREE.Vector3(0, 1, 0),
         Math.PI / 2
       );
-    }
-  }
+    },
+  },
 ];

@@ -18,7 +18,11 @@ import {
   FiFilm,
   FiStopCircle,
   FiPlay,
-  FiPlayCircle
+  FiPlayCircle,
+  FiActivity,
+  FiTrendingUp,
+  FiBattery,
+  FiClock,
 } from "react-icons/fi";
 
 import { Boxplot, computeBoxplotStats } from "react-boxplot";
@@ -36,6 +40,42 @@ const Container = styled.div`
   border-radius: 16px;
 `;
 
+const Metrics = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+
+  & > p > b {
+    font-size: 18px;
+  }
+  & > p {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    & > * + * {
+      margin-top: 0.5rem;
+    }
+  }
+
+  .unit {
+    opacity: 0.5;
+    font-size: 14px;
+    color: #3e21deaa;
+  }
+  .label {
+    margin-right: 0.25rem;
+    font-size: 14px;
+    color: #3e21de;
+  }
+
+  & > * + * {
+    margin-left: 1.5rem;
+  }
+`;
+
 const SpaceBetween = styled.div`
   width: 100%;
 
@@ -44,6 +84,7 @@ const SpaceBetween = styled.div`
   flex-direction: row;
   justify-content: space-between;
 `;
+
 const Row = styled.div`
   width: 100%;
 
@@ -61,10 +102,10 @@ const Row = styled.div`
 `;
 
 function statistics(data) {
-  const x = data.map(d => d.x);
-  const y = data.map(d => d.y);
-  const z = data.map(d => d.z);
-  const w = data.map(d => d.w);
+  const x = data.map((d) => d.x);
+  const y = data.map((d) => d.y);
+  const z = data.map((d) => d.z);
+  const w = data.map((d) => d.w);
 
   return {
     min: [min(x), min(y), min(z), min(w)],
@@ -74,25 +115,25 @@ function statistics(data) {
       quantile(x, 0.25),
       quantile(y, 0.25),
       quantile(z, 0.25),
-      quantile(w, 0.25)
+      quantile(w, 0.25),
     ],
     quantile2: [
       quantile(x, 0.5),
       quantile(y, 0.5),
       quantile(z, 0.5),
-      quantile(w, 0.5)
+      quantile(w, 0.5),
     ],
     quantile3: [
       quantile(x, 0.75),
       quantile(y, 0.75),
       quantile(z, 0.75),
-      quantile(w, 0.75)
+      quantile(w, 0.75),
     ],
-    dft: [dft(x), dft(y), dft(z), dft(w)]
+    dft: [dft(x), dft(y), dft(z), dft(w)],
   };
 }
 function deleteExercise(id) {
-  axios.delete("http://localhost:8000/exercise/" + id).then(response => {
+  axios.delete("http://localhost:8000/exercise/" + id).then((response) => {
     alert("Deleted");
   });
 }
@@ -100,104 +141,110 @@ function deleteExercise(id) {
 function jsonToCsv(samples) {
   const header = "x,y,z,w\n";
   const content = samples
-    .map(sample => `${sample.x},${sample.y},${sample.z},${sample.w}\n`)
+    .map((sample) => `${sample.x},${sample.y},${sample.z},${sample.w}\n`)
     .join("");
 
   return header + content;
 }
+
+function calculateDistance(point1, point2) {
+  return Math.sqrt(
+    Math.pow(point1.x - point2.x, 2) +
+      Math.pow(point1.y - point2.y, 2) +
+      Math.pow(point1.z - point2.z, 2) +
+      Math.pow(point1.w - point2.w, 2)
+  );
+}
+
 function Exercise({ match }) {
+  const iframeRef = React.useRef(null);
+
   const { id } = match.params;
 
   const [exercise, setExercise] = useState([]);
   const [rotationValue, setRotationValue] = useState([]);
-  const [xData, setXData] = useState([]);
   const [isReady, setIsReady] = useState(false);
-  const [stats, setStats] = useState(null);
-  const [data, setData] = useState([]);
   const [csvData, setCsvData] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     axios({
       method: "get",
-      url: "http://localhost:8000/exercise/" + id
-    }).then(response => {
-      var kalmanFilterX = new KalmanFilter({ R: 0.01, Q: 5 });
-      var kalmanFilterY = new KalmanFilter({ R: 0.01, Q: 5 });
-      var kalmanFilterZ = new KalmanFilter({ R: 0.01, Q: 5 });
-      var kalmanFilterW = new KalmanFilter({ R: 0.01, Q: 5 });
-
-      const exercise = {
-        ...response.data,
-        samples: response.data.samples.slice(1).map(sample => ({
-          ...sample,
-          x: kalmanFilterX.filter(sample.x),
-          y: kalmanFilterY.filter(sample.y),
-          y: kalmanFilterZ.filter(sample.z),
-          w: kalmanFilterW.filter(sample.w)
-        }))
-      };
-
-      setXData(exercise.samples.map(sample => sample.x));
-
-      // const data = exercise.samples.map(sample => sample.x);
-      // function nearestPow2(aSize) {
-      //   return Math.pow(2, Math.round(Math.log(aSize) / Math.log(2)));
-      // }
-      // const size = nearestPow2(data.length);
-      // const f = new FFT(size);
-      // const out = f.createComplexArray();
-      // f.realTransform(out, data);
-      // setData(out);
-
+      url: "http://localhost:8000/exercise/" + id,
+    }).then((response) => {
+      const exercise = response.data;
       const blobData = URL.createObjectURL(
         new Blob([jsonToCsv(exercise.samples)], {
-          type: "application/octet-stream"
+          type: "application/octet-stream",
         })
       );
       setCsvData(blobData);
 
       setExercise(exercise);
 
-      setStats(statistics(exercise.samples));
       setIsReady(true);
+
+      initIframe(exercise);
     });
   }, []);
 
-  var spectrum = [];
+  function initIframe(data) {
+    iframeRef.current.onload = function () {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({
+          type: "init",
+          positions: data.positions,
+          exerciseId: data.type,
+        }),
+        "http://localhost:8000"
+      );
+    };
+  }
+  function sendSampleToIframe(sample) {
+    if (iframeRef.current) {
+      iframeRef.current.contentWindow.postMessage(
+        JSON.stringify({ type: "predict", sample: sample }),
+        "http://localhost:8000"
+      );
+    }
+  }
+
+  function predictPosition(testingPoint) {
+    const pointsBetween = exercise.positions.length;
+
+    const distancesFromPositions = exercise.positions.map((pos) =>
+      calculateDistance(pos, testingPoint)
+    );
+    const minDistance = Math.min(...distancesFromPositions);
+    const posIndex = distancesFromPositions.indexOf(minDistance);
+
+    const fractionOfMovement = posIndex / pointsBetween;
+
+    return fractionOfMovement;
+  }
+
+  var timerId = null;
 
   const stop = () => {
-    var id = window.setTimeout(function() {}, 0);
-
-    while (id--) {
-      window.clearTimeout(id); // will do nothing if no timeout with id is present
+    let len = exercise.samples.length;
+    while (len--) {
+      window.clearTimeout(timerId); // will do nothing if no timeout with id is present
     }
     setRotationValue(0);
     setIsPlaying(false);
   };
 
-  const start = () => {
-    // const min = stats.quantile1[0];
-    // const max = stats.quantile3[0];
-    const min = stats.min[0];
-    const max = stats.max[0];
-
-    const getValue = x => {
-      if (x < min) return 0;
-      if (x > max) return 1;
-      const normX = (x - min) / (max - min);
-      return normX;
-    };
-
-    const data = exercise.samples.map(sample => sample.x);
+  const start = (samples, duration) => {
     setIsPlaying(true);
-    data.forEach((value, index) =>
-      setTimeout(() => {
-        setRotationValue(getValue(value));
-        if (index === data.length - 1) {
-          setIsPlaying(false);
-        }
-      }, index * (1000 / 60))
+    samples.forEach(
+      (sample, index) =>
+        (timerId = setTimeout(() => {
+          sendSampleToIframe(sample);
+          if (index === samples.length - 1) {
+            setIsPlaying(false);
+          }
+          return;
+        }, (index * 1000) / (samples.length / duration)))
     );
   };
 
@@ -207,12 +254,13 @@ function Exercise({ match }) {
         <div>
           <SpaceBetween>
             <h2>{exercise.name}</h2>
+
             <div
               style={{
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "center",
-                alignItems: "center"
+                alignItems: "center",
               }}
             >
               <a
@@ -224,7 +272,7 @@ function Exercise({ match }) {
                   cursor: "pointer",
                   display: "block",
                   textDecoration: "none",
-                  marginRight: "1rem"
+                  marginRight: "1rem",
                 }}
               >
                 <FiSave style={{ marginRight: "0.5rem" }} />
@@ -233,19 +281,24 @@ function Exercise({ match }) {
 
               <Button
                 appearance="primary"
-                onClick={isPlaying ? stop : start}
+                onClick={
+                  isPlaying
+                    ? () => {}
+                    : () => start(exercise.samples, exercise.duration)
+                }
                 height={40}
                 style={{
                   textAlign: "center",
                   backgroundImage: isPlaying
                     ? "linear-gradient(to bottom, #fc4353, #fc4353)"
-                    : "linear-gradient(to bottom, #3E21DE, #3E21DE)"
+                    : "linear-gradient(to bottom, #3E21DE, #3E21DE)",
                 }}
                 type="submit"
               >
                 {isPlaying ? (
                   <>
-                    <FiStopCircle style={{ marginRight: "0.5rem" }} /> Stop
+                    <FiStopCircle style={{ marginRight: "0.5rem" }} />{" "}
+                    Playing...
                   </>
                 ) : (
                   <>
@@ -256,10 +309,37 @@ function Exercise({ match }) {
             </div>
           </SpaceBetween>
 
-          <p>
-            <FiBarChart2 style={{ marginRight: "0.5rem" }} />
-            Samples: <b>{exercise.samples.length}</b>
-          </p>
+          <Metrics>
+            <p>
+              <span className="label">Calories: </span>
+              <b>{exercise.metrics.calories}</b>{" "}
+              <span className="unit">kcal</span>
+            </p>
+            <p>
+              <span className="label">Energy: </span>
+              <b>{exercise.metrics.energy}</b>{" "}
+              <span className="unit">Joule</span>
+            </p>
+            <p>
+              <span className="label">Power: </span>
+              <b>{exercise.metrics.power}</b> <span className="unit">Watt</span>
+            </p>
+            <p>
+              <span className="label">Duration: </span>
+              <b>{exercise.duration}</b> <span className="unit">sec</span>
+            </p>
+            <p>
+              <span className="label">Reps: </span>
+              <b>{exercise.metrics.reps}</b>
+            </p>
+          </Metrics>
+
+          <Row>
+            <p style={{ marginRight: "1.5rem" }}>
+              <FiBarChart2 style={{ marginRight: "0.5rem" }} />
+              Samples: <b>{exercise.samples.length}</b>
+            </p>
+          </Row>
 
           <Link
             to={"/user/" + exercise.user}
@@ -279,130 +359,58 @@ function Exercise({ match }) {
                 datasets: [
                   {
                     label: "x",
-                    data: xData,
+                    data: exercise.samples.map((sample) => sample.x),
                     borderColor: "rgba(245, 65, 65, 1)",
-                    backgroundColor: "rgba(245, 65, 65, 0.2)",
+                    backgroundColor: "rgba(245, 65, 65, 0.1)",
                     pointBorderWidth: 1,
-                    pointRadius: 1
+                    pointRadius: 1,
                   },
 
                   {
                     label: "y",
-                    data: exercise.samples.map(sample => sample.y),
+                    data: exercise.samples.map((sample) => sample.y),
                     borderColor: "rgba(56, 201, 119, 1)",
-                    backgroundColor: "rgba(56, 201, 119, 0.2)",
-                    pointRadius: 1
+                    backgroundColor: "rgba(56, 201, 119, 0.1)",
+                    pointRadius: 1,
                   },
                   {
                     label: "z",
-                    data: exercise.samples.map(sample => sample.z),
+                    data: exercise.samples.map((sample) => sample.z),
                     borderColor: "rgba(56, 105, 201, 1)",
-                    backgroundColor: "rgba(56, 105, 201, 0.2)",
-                    pointRadius: 1
+                    backgroundColor: "rgba(56, 105, 201, 0.1)",
+                    pointRadius: 1,
                   },
                   {
                     label: "w",
-                    data: exercise.samples.map(sample => sample.w),
+                    data: exercise.samples.map((sample) => sample.w),
                     borderColor: "rgba(201, 187, 56, 1)",
-                    backgroundColor: "rgba(201, 187, 56, 0.2)",
-                    pointRadius: 1
-                  }
-                ]
+                    backgroundColor: "rgba(201, 187, 56, 0.1)",
+                    pointRadius: 1,
+                  },
+                ],
               }}
               options={{
                 scales: {
                   xAxes: [
                     {
-                      display: false
-                    }
-                  ]
-                }
+                      display: false,
+                    },
+                  ],
+                },
               }}
             />
-            <GymBuddy rotationValue={rotationValue} />
+            <iframe
+              src={"http://localhost:8000/dashboard"}
+              ref={iframeRef}
+              sandbox
+              style={{
+                border: "2px dashed rgb(62, 33, 222)",
+                borderRadius: "8px",
+                margin: "1rem",
+              }}
+            ></iframe>
+            {/* <GymBuddy rotationValue={rotationValue} /> */}
           </Row>
-
-          <>
-            <div>
-              x
-              <Boxplot
-                width={400}
-                height={25}
-                orientation="horizontal"
-                min={-10}
-                max={10}
-                stats={computeBoxplotStats(
-                  exercise.samples.map(sample => sample.x.toFixed(3) * 10)
-                )}
-              />
-            </div>
-            <div>
-              y
-              <Boxplot
-                width={400}
-                height={25}
-                orientation="horizontal"
-                min={-10}
-                max={10}
-                stats={computeBoxplotStats(
-                  exercise.samples.map(sample => sample.y.toFixed(3) * 10)
-                )}
-              />
-            </div>
-            <div>
-              z
-              <Boxplot
-                width={400}
-                height={25}
-                orientation="horizontal"
-                min={-10}
-                max={10}
-                stats={computeBoxplotStats(
-                  exercise.samples.map(sample => sample.z.toFixed(3) * 10)
-                )}
-              />
-            </div>
-            <div>
-              w
-              <Boxplot
-                width={400}
-                height={25}
-                orientation="horizontal"
-                min={-10}
-                max={10}
-                stats={computeBoxplotStats(
-                  exercise.samples.map(sample => sample.w.toFixed(3) * 10)
-                )}
-              />
-            </div>
-          </>
-          {/* {stats.dft.map(data => (
-            <Line
-              width="200px"
-              data={{
-                labels: data.map((point, index) => index),
-                datasets: [
-                  {
-                    label: "x",
-                    data: data.map(point => point.getRadius()),
-                    borderColor: "rgba(75, 192, 192, 1)",
-                    backgroundColor: "rgba(75, 192, 192, 0.2)",
-                    pointBorderWidth: 1,
-                    pointRadius: 1
-                  }
-                ]
-              }}
-              options={{
-                scales: {
-                  xAxes: [
-                    {
-                      display: false
-                    }
-                  ]
-                }
-              }}
-            />
-          ))} */}
 
           <div
             onClick={() => deleteExercise(id)}
@@ -412,7 +420,7 @@ function Exercise({ match }) {
               margin: "1rem",
               display: "flex",
               flexDirection: "row",
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
             <FiTrash style={{ marginRight: "0.5rem" }} /> Delete exercise
