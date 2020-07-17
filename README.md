@@ -1,58 +1,42 @@
-# gym-buddy
+# VirtualCoach system
 
 **Live URL:** https://flex-your-muscle.netlify.com/
 
-## How to use
+## Requirements
 
-Create the WebView and setup the url:
+- JavaScript
+- npm or yarn package installer
+- MongoDB
 
-```java
-  final String PUBLIC_URL = "https://flex-your-muscle.netlify.com/";
+## How to run it
 
-  private WebView mWebView = null;
+You have to install the Android app that is available [here](https://github.com/dimitrisraptis96/virtualcoach-android-app)
 
-  protected void onCreate(Bundle savedInstanceState) {
-      super.onCreate(savedInstanceState);
-      setContentView(R.layout.activity_main);
+Then, the local development needs three servers: 
 
-      mWebView = (WebView) findViewById(R.id.webview);
-      mWebView.loadUrl(PUBLIC_URL);
+### 1. MongoDB server
+Run the mongoDB server first of all `mongod`
 
-      WebSettings webSettings = mWebView.getSettings();
-      webSettings.setJavaScriptEnabled(true);
-  }
+### 2. Backend server 
+The backend server uses a Restful API. It creates/saves/edits all the user's data and serves the Three.js views for the Android app and the gym's dashboard.
+
+To install the backend dependencies run the following commands:
+```
+cd server
+yarn
 ```
 
-Add the Android permission to access the Internet on `AndroidManifest.xml`
+### 3. Frontend server
+The React server serves the gym's dashboard that handles the data visualization.
 
-```xml
-<uses-permission android:name="android.permission.INTERNET"/>
+To install the frontend dependencies run the following commands:
+```
+cd frontend
+yarn
 ```
 
-When the sample is available call the magical js function
+To start backend and frontend server cuncurrently you have to run the following command from the root directory:
 
-```java
-double x = something;
-double y = something;
-double z = something;
-double w = something;
-
-mWebView.evaluateJavascript("javascript: " + "updateQuaternion(" + x + "," + y + "," + z + "," + w + ")", null);
-```
-
-## Metrics
-
-- Calories (kcal)
-- Speed (m/s)
-- Rate (reps/min)
-- Reps
-- Strength (Watts)
-- Explosiveness (m^2/s)
-
-Targets of coach
-
-Inspo: https://www.thisisbeast.com/en
-
-https://www.performancemenu.com/article/43/Work-Power-Calculator/
+ `yarn start`
 
 Enjoy your workout 🏃
