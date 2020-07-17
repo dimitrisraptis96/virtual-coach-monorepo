@@ -15,7 +15,9 @@ You have to install the Android app that is available [here](https://github.com/
 Then, the local development needs three servers: 
 
 ### 1. MongoDB server
-Run the mongoDB server first of all `mongod`
+Where all the data are saved. You have to run the mongo server at the beggining with the following bash command:
+
+`mongod`
 
 ### 2. Backend server 
 The backend server uses a Restful API. It creates/saves/edits all the user's data and serves the Three.js views for the Android app and the gym's dashboard.
